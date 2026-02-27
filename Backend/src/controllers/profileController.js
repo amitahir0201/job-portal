@@ -1,0 +1,53 @@
+const User = require('../models/User');
+const Company = require('../models/Company');
+
+// GET /api/profile
+exports.getProfile = async (req, res) => {
+  const user = await User.findById(req.user._id).select('-password');
+  res.json({ success: true, profile: user });
+};
+
+// PUT /api/profile
+exports.updateProfile = async (req, res) => {
+  const updates = req.body || {};
+
+  // Frontend alias fields for recruiter profile
+  if (typeof updates.designation === 'string') updates.headline = updates.designation;
+  if (typeof updates.bio === 'string') updates.summary = updates.bio;
+  if (typeof updates.linkedinLink === 'string') updates.linkedinUrl = updates.linkedinLink;
+
+  // If file uploaded, set URL (local file for now)
+  if (req.file) {
+    updates.profilePhoto = `/uploads/${req.file.filename || req.file.originalname}`;
+  }
+  const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true }).select('-password');
+  res.json({ success: true, profile: user });
+};
+
+// Company endpoints (basic)
+exports.getCompanyProfile = async (req, res) => {
+  const company = await Company.findOne({ owner: req.user._id });
+  if (!company) return res.json({ success: false, message: 'No company' });
+  res.json({ success: true, data: company });
+};
+
+exports.updateCompanyProfile = async (req, res) => {
+  const payload = req.body || {};
+  if (typeof payload.socialLinks === 'string') {
+    try {
+      payload.socialLinks = JSON.parse(payload.socialLinks);
+    } catch (err) {
+      payload.socialLinks = {};
+    }
+  }
+  if (req.file) payload.companyLogo = `/uploads/${req.file.filename || req.file.originalname}`;
+  let company = await Company.findOne({ owner: req.user._id });
+  if (company) {
+    company = Object.assign(company, payload);
+    await company.save();
+  } else {
+    company = new Company({ owner: req.user._id, ...payload });
+    await company.save();
+  }
+  res.json({ success: true, data: company });
+};
