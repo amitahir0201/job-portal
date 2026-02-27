@@ -129,6 +129,11 @@ const Login = () => {
                 className={`input-field ${errors.password ? 'border-red-500 focus:ring-red-500' : ''}`}
               />
               {errors.password && <p className="text-red-600 text-sm mt-1">{errors.password}</p>}
+              <div className="mt-2 text-right">
+                <button type="button" onClick={() => navigate('/forgot-password')} className="text-sm text-emerald-600 hover:underline">
+                  Forgot Password?
+                </button>
+              </div>
             </div>
 
             {/* Submit Button */}

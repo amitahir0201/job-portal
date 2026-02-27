@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema(
   {
@@ -26,12 +27,27 @@ const userSchema = new mongoose.Schema(
     companyName: String, // for recruiters
 
     savedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }],
+    // password reset
+    resetPasswordToken: { type: String },
+    resetPasswordExpires: { type: Date },
   },
   { timestamps: true }
 );
 
+userSchema.pre('save', async function preSave(next) {
+  if (!this.isModified('password')) return next();
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    return next();
+  } catch (err) {
+    return next(err);
+  }
+});
+
 userSchema.methods.matchPassword = async function matchPassword(candidatePassword) {
-  return String(this.password || '') === String(candidatePassword || '');
+  if (!this.password) return false;
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
 module.exports = mongoose.model('User', userSchema);
