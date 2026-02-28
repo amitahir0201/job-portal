@@ -39,7 +39,7 @@ async function getTransporter() {
 
 async function sendResetPasswordEmail({ to, name, token }) {
   const transporter = await getTransporter();
-  const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password/${token}`;
+  const resetUrl = `${process.env.FRONTEND_URL || 'https://jobhubnow.vercel.app'}/reset-password/${token}`;
 
   const html = `
   <div style="font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; color:#0f172a;">
