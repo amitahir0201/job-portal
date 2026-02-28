@@ -101,3 +101,21 @@ exports.getSavedJobs = async (req, res) => {
   const jobs = await Job.find({ _id: { $in: ids } });
   res.json({ success: true, jobs: jobs.map(serializeJob) });
 };
+
+exports.updateJobStatus = async (req, res) => {
+  const { status } = req.body;
+  const job = await Job.findById(req.params.id);
+  
+  if (!job) {
+    return res.status(404).json({ success: false, message: 'Job not found' });
+  }
+  
+  if (!job.postedBy || !job.postedBy.equals(req.user._id)) {
+    return res.status(403).json({ success: false, message: 'Not allowed' });
+  }
+  
+  job.status = status;
+  await job.save();
+  
+  res.json({ success: true, job: serializeJob(job) });
+};

@@ -1,189 +1,136 @@
+import api from './api';
+
 /**
- * Mock API Service for Recruiter Dashboard
- * Simulates API calls with realistic data
+ * Real API Service for Recruiter Dashboard
+ * Fetches actual data from the backend API
  */
 
-// Mock Job Data
-export const mockJobs = [
-  {
-    _id: '1',
-    title: 'Senior React Developer',
-    description: 'Looking for an experienced React developer',
-    salaryMin: 80000,
-    salaryMax: 120000,
-    currency: 'USD',
-    location: 'San Francisco, CA',
-    jobType: 'Full-time',
-    experienceLevel: '5+ years',
-    status: 'Active',
-    applications: 12,
-    views: 245,
-    deadline: '2026-03-15',
-    createdAt: '2026-02-01',
-  },
-  {
-    _id: '2',
-    title: 'Product Manager',
-    description: 'Leading product strategy and development',
-    salaryMin: 100000,
-    salaryMax: 150000,
-    currency: 'USD',
-    location: 'New York, NY',
-    jobType: 'Full-time',
-    experienceLevel: '7+ years',
-    status: 'Active',
-    applications: 8,
-    views: 189,
-    deadline: '2026-02-28',
-    createdAt: '2026-02-03',
-  },
-  {
-    _id: '3',
-    title: 'UI/UX Designer',
-    description: 'Design beautiful and intuitive user interfaces',
-    salaryMin: 70000,
-    salaryMax: 100000,
-    currency: 'USD',
-    location: 'Remote',
-    jobType: 'Full-time',
-    experienceLevel: '3-5 years',
-    status: 'Draft',
-    applications: 0,
-    views: 0,
-    deadline: '2026-03-20',
-    createdAt: '2026-02-10',
-  },
-  {
-    _id: '4',
-    title: 'DevOps Engineer',
-    description: 'Infrastructure and deployment specialist',
-    salaryMin: 95000,
-    salaryMax: 130000,
-    currency: 'USD',
-    location: 'Seattle, WA',
-    jobType: 'Full-time',
-    experienceLevel: '5+ years',
-    status: 'Closed',
-    applications: 25,
-    views: 412,
-    deadline: '2026-01-31',
-    createdAt: '2026-01-15',
-  },
-];
-
-// Mock Applicants Data
-export const mockApplicants = [
-  {
-    _id: 'app1',
-    name: 'John Smith',
-    email: 'john@example.com',
-    jobTitle: 'Senior React Developer',
-    status: 'Interview Scheduled',
-    appliedDate: '2026-02-05',
-    resumeUrl: '#',
-  },
-  {
-    _id: 'app2',
-    name: 'Sarah Johnson',
-    email: 'sarah@example.com',
-    jobTitle: 'Senior React Developer',
-    status: 'Shortlisted',
-    appliedDate: '2026-02-06',
-    resumeUrl: '#',
-  },
-  {
-    _id: 'app3',
-    name: 'Mike Chen',
-    email: 'mike@example.com',
-    jobTitle: 'Product Manager',
-    status: 'New',
-    appliedDate: '2026-02-08',
-    resumeUrl: '#',
-  },
-  {
-    _id: 'app4',
-    name: 'Emma Davis',
-    email: 'emma@example.com',
-    jobTitle: 'Senior React Developer',
-    status: 'Reviewed',
-    appliedDate: '2026-02-09',
-    resumeUrl: '#',
-  },
-  {
-    _id: 'app5',
-    name: 'Alex Wilson',
-    email: 'alex@example.com',
-    jobTitle: 'UI/UX Designer',
-    status: 'Rejected',
-    appliedDate: '2026-02-07',
-    resumeUrl: '#',
-  },
-];
-
-// Mock API Functions
 export const dashboardAPI = {
-  // Fetch jobs
+  // Fetch recruiter's jobs
   getJobs: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          jobs: mockJobs,
-          stats: {
-            total: mockJobs.length,
-            active: mockJobs.filter((j) => j.status === 'Active').length,
-            draft: mockJobs.filter((j) => j.status === 'Draft').length,
-            closed: mockJobs.filter((j) => j.status === 'Closed').length,
-            totalApplications: mockJobs.reduce((sum, j) => sum + j.applications, 0),
-            totalViews: mockJobs.reduce((sum, j) => sum + j.views, 0),
-          },
-        });
-      }, 300);
-    });
+    try {
+      const response = await api.get('/jobs/my');
+      const jobs = response.data.jobs || [];
+      
+      return {
+        success: true,
+        jobs: jobs.map(job => ({
+          ...job,
+          applications: job.applicationsCount || 0,
+          views: job.views || 0,
+          deadline: job.applicationDeadline || '',
+        })),
+        stats: {
+          total: jobs.length,
+          active: jobs.filter((j) => j.status === 'Active').length,
+          draft: jobs.filter((j) => j.status === 'Draft').length,
+          closed: jobs.filter((j) => j.status === 'Closed').length,
+          totalApplications: jobs.reduce((sum, j) => sum + (j.applicationsCount || 0), 0),
+          totalViews: jobs.reduce((sum, j) => sum + (j.views || 0), 0),
+        },
+      };
+    } catch (error) {
+      console.error('Error fetching jobs:', error);
+      return {
+        success: false,
+        jobs: [],
+        message: error.response?.data?.message || 'Failed to fetch jobs',
+      };
+    }
   },
 
-  // Fetch applicants
+  // Fetch applicants for all jobs
   getApplicants: async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          applicants: mockApplicants,
-          stats: {
-            total: mockApplicants.length,
-            new: mockApplicants.filter((a) => a.status === 'New').length,
-            reviewed: mockApplicants.filter((a) => a.status === 'Reviewed').length,
-            shortlisted: mockApplicants.filter((a) => a.status === 'Shortlisted').length,
-            scheduled: mockApplicants.filter((a) => a.status === 'Interview Scheduled').length,
-            rejected: mockApplicants.filter((a) => a.status === 'Rejected').length,
-            hired: mockApplicants.filter((a) => a.status === 'Hired').length,
-          },
+    try {
+      // First, get all jobs
+      const jobsRes = await api.get('/jobs/my');
+      const jobs = jobsRes.data.jobs || [];
+
+      // Fetch applications for each job
+      const applicantPromises = jobs.map(job =>
+        api.get(`/applications/job/${job._id}`).catch(() => ({ data: { applications: [] } }))
+      );
+
+      const applicantResponses = await Promise.all(applicantPromises);
+      const allApplicants = [];
+
+      // Flatten all applications from all jobs
+      applicantResponses.forEach((response, index) => {
+        const applications = response.data?.applications || [];
+        applications.forEach(app => {
+          allApplicants.push({
+            _id: app._id,
+            name: app.applicant?.name || 'Unknown',
+            email: app.applicant?.email || '',
+            jobTitle: jobs[index]?.title || '',
+            status: app.status || 'New',
+            appliedDate: app.createdAt || new Date(),
+            resumeUrl: app.resumeURL || '',
+            jobId: jobs[index]?._id || '',
+          });
         });
-      }, 300);
-    });
+      });
+
+      return {
+        success: true,
+        applicants: allApplicants,
+        stats: {
+          total: allApplicants.length,
+          new: allApplicants.filter((a) => a.status === 'New').length,
+          reviewed: allApplicants.filter((a) => a.status === 'Reviewed').length,
+          shortlisted: allApplicants.filter((a) => a.status === 'Shortlisted').length,
+          scheduled: allApplicants.filter((a) => a.status === 'Interview Scheduled').length,
+          rejected: allApplicants.filter((a) => a.status === 'Rejected').length,
+          hired: allApplicants.filter((a) => a.status === 'Hired').length,
+        },
+      };
+    } catch (error) {
+      console.error('Error fetching applicants:', error);
+      return {
+        success: false,
+        applicants: [],
+        message: error.response?.data?.message || 'Failed to fetch applicants',
+      };
+    }
   },
 
   // Update applicant status
   updateApplicantStatus: async (applicantId, newStatus) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          message: `Applicant status updated to ${newStatus}`,
-        });
-      }, 200);
-    });
+    try {
+      const response = await api.put(`/applications/${applicantId}/status`, {
+        status: newStatus,
+      });
+      return {
+        success: true,
+        message: `Applicant status updated to ${newStatus}`,
+        application: response.data.application,
+      };
+    } catch (error) {
+      console.error('Error updating applicant status:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to update status',
+      };
+    }
   },
 
   // Close job
   closeJob: async (jobId) => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          success: true,
-          message: 'Job closed successfully',
-        });
-      }, 200);
-    });
+    try {
+      const response = await api.put(`/jobs/${jobId}/status`, {
+        status: 'Closed',
+      });
+      return {
+        success: true,
+        message: 'Job closed successfully',
+        job: response.data.job,
+      };
+    } catch (error) {
+      console.error('Error closing job:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to close job',
+      };
+    }
   },
 };

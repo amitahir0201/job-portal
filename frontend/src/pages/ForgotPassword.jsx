@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -9,58 +9,122 @@ const ForgotPassword = () => {
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
 
-  const validateEmail = (value) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  // Email validation regex
+  const validateEmail = (value) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+  };
 
+  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     setSuccess('');
-    if (!validateEmail(email)) return setError('Please enter a valid email');
+
+    // Validation
+    if (!email.trim()) {
+      return setError('Please enter your email address');
+    }
+
+    if (!validateEmail(email)) {
+      return setError('Please enter a valid email address');
+    }
+
     try {
       setLoading(true);
-      const res = await api.post('/auth/forgot-password', { email });
-      if (res.data && res.data.success) {
-        setSuccess('If an account exists, a reset link has been sent.');
-        setTimeout(() => navigate('/login'), 3000);
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/forgot-password`,
+        { email: email.toLowerCase().trim() }
+      );
+
+      if (response.data?.success) {
+        setSuccess('Check your email for password reset instructions.');
+        setEmail('');
+
+        // Redirect to login after 4 seconds
+        setTimeout(() => {
+          navigate('/login');
+        }, 4000);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong');
+      const errorMessage = err.response?.data?.message || 'Unable to process request. Please try again.';
+      setError(errorMessage);
+      console.error('Forgot password error:', err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-emerald-50 flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <div className="card shadow-lg p-6">
-          <h2 className="text-2xl font-bold mb-2">Forgot Password</h2>
-          <p className="text-sm text-gray-600 mb-4">Enter your account email and we'll send a password reset link.</p>
+        <div className="bg-white rounded-xl shadow-2xl p-8">
+          {/* Header */}
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Forgot Password?</h1>
+            <p className="text-gray-600">Enter your email and we'll send you a reset link.</p>
+          </div>
 
-          {error && <div className="mb-3 text-sm text-red-600">{error}</div>}
-          {success && <div className="mb-3 text-sm text-emerald-700">{success}</div>}
+          {/* Error Message */}
+          {error && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <p className="text-sm font-medium text-red-900">Error</p>
+              <p className="text-sm text-red-700">{error}</p>
+            </div>
+          )}
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Success Message */}
+          {success && (
+            <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <p className="text-sm font-medium text-emerald-900">Success!</p>
+              <p className="text-sm text-emerald-700">{success}</p>
+              <p className="text-xs text-emerald-600 mt-2">Redirecting to login...</p>
+            </div>
+          )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">Email Address</label>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Email Address
+              </label>
               <input
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="input-field"
-                placeholder="you@company.com"
+                disabled={loading}
+                className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 outline-none transition disabled:bg-gray-50"
+                placeholder="you@example.com"
               />
             </div>
 
-            <div className="flex gap-3">
-              <button disabled={loading} className="btn-primary flex-1">
-                {loading ? 'Sending...' : 'Send Reset Link'}
-              </button>
-              <button type="button" onClick={() => navigate('/login')} className="px-4 py-2 rounded bg-gray-100">
-                Cancel
-              </button>
-            </div>
+            <button
+              type="submit"
+              disabled={loading || !email.trim()}
+              className="w-full px-6 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-semibold transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              {loading ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                'Send Reset Link'
+              )}
+            </button>
           </form>
+
+          {/* Footer */}
+          <div className="mt-8 pt-6 border-t border-gray-200">
+            <p className="text-center text-sm text-gray-600">
+              Remember your password?{' '}
+              <button
+                onClick={() => navigate('/login')}
+                className="text-emerald-600 hover:text-emerald-700 font-semibold transition"
+              >
+                Sign in
+              </button>
+            </p>
+          </div>
         </div>
       </div>
     </div>

@@ -14,6 +14,7 @@ import Dashboard from './pages/Dashboard';
 import PostJob from './pages/PostJob';
 import JobSeekerDashboard from './pages/JobSeekerDashboard';
 import RecruiterDashboard from './pages/RecruiterDashboard';
+import AdminDashboard from './pages/AdminDashboard';
 import JobDetails from './pages/JobDetails';
 import Applicants from './pages/Applicants';
 import ApplicantDetails from './pages/ApplicantDetails';
@@ -221,6 +222,16 @@ function App() {
             element={
               <ProtectedRoute>
                 <Messages />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Admin Routes */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute requiredRole="admin">
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />

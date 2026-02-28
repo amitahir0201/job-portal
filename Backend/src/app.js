@@ -4,6 +4,7 @@ const morgan = require('morgan');
 const path = require('path');
 
 const authRoutes = require('./routes/auth');
+const adminRoutes = require('./routes/admin');
 const profileRoutes = require('./routes/profile');
 const jobRoutes = require('./routes/jobs');
 const applicationRoutes = require('./routes/applications');
@@ -24,6 +25,7 @@ app.get('/api/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
 
 // Routes
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 app.use('/api/profile', profileRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/applications', applicationRoutes);

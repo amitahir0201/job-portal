@@ -46,7 +46,7 @@ async function sendResetPasswordEmail({ to, name, token }) {
     <div style="max-width:680px;margin:0 auto;padding:32px;">
       <div style="background:#ffffff;border-radius:12px;padding:32px;box-shadow:0 6px 18px rgba(15,23,42,0.06);">
         <h2 style="margin:0 0 8px 0;font-size:20px;color:#0f172a">Reset your password</h2>
-        <p style="margin:0 0 20px 0;color:#475569">Hi ${name || 'there'},<br/>We received a request to reset your password. Click the button below to choose a new password. This link will expire in 1 hour.</p>
+        <p style="margin:0 0 20px 0;color:#475569">Hi ${name || 'there'},<br/>We received a request to reset your password. Click the button below to choose a new password. This link will expire in 15 minutes.</p>
 
         <div style="text-align:center;margin:26px 0;">
           <a href="${resetUrl}" style="display:inline-block;padding:12px 20px;background:#059669;color:white;border-radius:8px;text-decoration:none;font-weight:600;font-size:16px;">Reset Password</a>

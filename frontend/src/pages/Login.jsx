@@ -63,7 +63,9 @@ const Login = () => {
       if (response.data.success) {
         login(response.data.user, response.data.token);
         // Navigate to role-specific dashboards
-        if (response.data.user.role === 'recruiter') {
+        if (response.data.user.role === 'admin') {
+          navigate('/admin');
+        } else if (response.data.user.role === 'recruiter') {
           navigate('/recruiter');
         } else {
           navigate('/job-seeker');

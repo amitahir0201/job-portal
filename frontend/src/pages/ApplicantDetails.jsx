@@ -520,13 +520,59 @@ const ApplicantDetails = () => {
                         title="Certifications"
                         description={`${applicant.certifications.length} certifications`}
                       />
-                      <div className="space-y-2">
-                        {applicant.certifications.map((cert, index) => (
-                          <div key={index} className="flex items-center gap-3 p-3 bg-secondary-50 rounded-lg">
-                            <CheckCircle className="w-5 h-5 text-primary-600" />
-                            <span className="text-sm text-secondary-700">{cert}</span>
-                          </div>
-                        ))}
+                      <div className="space-y-4">
+                        {applicant.certifications.map((cert, index) => {
+                          // Handle both string and object formats
+                          const isString = typeof cert === 'string';
+                          const certTitle = isString ? cert : cert?.title;
+                          const certIssuer = !isString ? cert?.issuer : null;
+                          const certIssueDate = !isString ? cert?.issueDate : null;
+                          const certExpiryDate = !isString ? cert?.expiryDate : null;
+                          const certUrl = !isString ? cert?.credentialUrl : null;
+
+                          return (
+                            <div key={index} className="p-4 bg-secondary-50 rounded-lg border border-secondary-200">
+                              <div className="flex items-start gap-3">
+                                <CheckCircle className="w-5 h-5 text-primary-600 flex-shrink-0 mt-0.5" />
+                                <div className="flex-1 min-w-0">
+                                  {/* Certificate Title */}
+                                  <h3 className="text-sm font-semibold text-secondary-900">{certTitle}</h3>
+
+                                  {/* Certificate Details (for object format) */}
+                                  {!isString && (
+                                    <div className="mt-2 space-y-1">
+                                      {certIssuer && (
+                                        <p className="text-xs text-secondary-600">
+                                          <span className="font-medium text-secondary-700">Issuer:</span> {certIssuer}
+                                        </p>
+                                      )}
+                                      {certIssueDate && (
+                                        <p className="text-xs text-secondary-600">
+                                          <span className="font-medium text-secondary-700">Issued:</span> {new Date(certIssueDate).toLocaleDateString()}
+                                        </p>
+                                      )}
+                                      {certExpiryDate && (
+                                        <p className="text-xs text-secondary-600">
+                                          <span className="font-medium text-secondary-700">Expiry:</span> {new Date(certExpiryDate).toLocaleDateString()}
+                                        </p>
+                                      )}
+                                      {certUrl && (
+                                        <a
+                                          href={certUrl}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-1 text-xs text-primary-600 hover:text-primary-700 font-medium mt-2"
+                                        >
+                                          View Credential <ExternalLink className="w-3 h-3" />
+                                        </a>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
                     </div>
                   </div>

@@ -12,8 +12,6 @@ const Register = () => {
     email: '',
     password: '',
     confirmPassword: '',
-    role: 'jobseeker',
-    companyName: '',
   });
 
   const [errors, setErrors] = useState({});
@@ -51,10 +49,6 @@ const Register = () => {
       newErrors.confirmPassword = 'Passwords do not match';
     }
 
-    if (formData.role === 'recruiter' && !formData.companyName.trim()) {
-      newErrors.companyName = 'Company name is required for recruiters';
-    }
-
     return newErrors;
   };
 
@@ -82,13 +76,11 @@ const Register = () => {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: formData.role,
-        companyName: formData.role === 'recruiter' ? formData.companyName : '',
       });
 
       if (response.data.success) {
         login(response.data.user, response.data.token);
-        navigate(formData.role === 'recruiter' ? '/recruiter' : '/job-seeker');
+        navigate('/job-seeker');
       }
     } catch (err) {
       setGlobalError(err.response?.data?.message || 'Registration failed');
@@ -174,50 +166,11 @@ const Register = () => {
               {errors.confirmPassword && <p className="text-red-600 text-sm mt-1">{errors.confirmPassword}</p>}
             </div>
 
-            {/* Role Selection */}
-            <div className="animate-fade-in" style={{ animationDelay: '0.5s' }}>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">I am a...</label>
-              <div className="flex gap-4">
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="jobseeker"
-                    checked={formData.role === 'jobseeker'}
-                    onChange={handleChange}
-                    className="w-4 h-4 text-green-600"
-                  />
-                  <span className="text-gray-700">Job Seeker</span>
-                </label>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="role"
-                    value="recruiter"
-                    checked={formData.role === 'recruiter'}
-                    onChange={handleChange}
-                    className="w-4 h-4 text-green-600"
-                  />
-                  <span className="text-gray-700">Recruiter</span>
-                </label>
-              </div>
+            {/* Info: Job Seeker Registration */}
+            <div className="animate-fade-in p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700" style={{ animationDelay: '0.5s' }}>
+              <span className="font-semibold">ℹ️ Job Seeker Registration</span><br />
+              <span>Create your account to explore job opportunities and apply for positions.</span>
             </div>
-
-            {/* Company Name (for Recruiters) */}
-            {formData.role === 'recruiter' && (
-              <div className="animate-fade-in" style={{ animationDelay: '0.55s' }}>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">Company Name</label>
-                <input
-                  type="text"
-                  name="companyName"
-                  value={formData.companyName}
-                  onChange={handleChange}
-                  placeholder="Your Company Name"
-                  className={`input-field ${errors.companyName ? 'border-red-500 focus:ring-red-500' : ''}`}
-                />
-                {errors.companyName && <p className="text-red-600 text-sm mt-1">{errors.companyName}</p>}
-              </div>
-            )}
 
             {/* Submit Button */}
             <button

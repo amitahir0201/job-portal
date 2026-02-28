@@ -8,7 +8,7 @@ const generateToken = (user) => {
 };
 
 exports.register = async (req, res) => {
-  const { name, fullName, email, password, role, companyName } = req.body;
+  const { name, fullName, email, password, companyName } = req.body;
   const normalizedEmail = String(email || '').trim().toLowerCase();
   const resolvedName = String(fullName || name || '').trim();
   if (!resolvedName || !normalizedEmail || !password) {
@@ -18,11 +18,12 @@ exports.register = async (req, res) => {
   const existing = await User.findOne({ email: normalizedEmail });
   if (existing) return res.status(409).json({ success: false, message: 'User already exists' });
 
+  // Always create as 'seeker' - role selection removed from public registration
   const user = await User.create({
     fullName: resolvedName,
     email: normalizedEmail,
     password,
-    role,
+    role: 'seeker', // Always seeker for public registration
     companyName,
   });
   const token = generateToken(user);
@@ -58,9 +59,10 @@ exports.forgotPassword = async (req, res) => {
 
   user.resetPasswordToken = hashed;
   // update only the reset fields to avoid triggering full document validation
+  // 15 minutes expiry: 15 * 60 * 1000 = 900000 ms
   await User.updateOne(
     { _id: user._id },
-    { $set: { resetPasswordToken: hashed, resetPasswordExpires: Date.now() + 60 * 60 * 1000 } }
+    { $set: { resetPasswordToken: hashed, resetPasswordExpires: Date.now() + 15 * 60 * 1000 } }
   );
 
   try {

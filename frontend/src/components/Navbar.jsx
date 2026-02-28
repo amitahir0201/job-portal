@@ -57,6 +57,14 @@ const Navbar = () => {
               </>
             ) : (
               <>
+                {user?.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    className="px-4 py-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors font-semibold"
+                  >
+                    🛡️ Admin Dashboard
+                  </Link>
+                )}
                 {user?.role === 'recruiter' && (
                   <>
                     <Link
@@ -129,6 +137,15 @@ const Navbar = () => {
               </>
             ) : (
               <>
+                {user?.role === 'admin' && (
+                  <Link
+                    to="/admin"
+                    className="block px-4 py-3 text-purple-600 hover:bg-purple-50 hover:text-purple-700 rounded-lg transition-colors font-semibold"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    🛡️ Admin Dashboard
+                  </Link>
+                )}
                 {user?.role === 'recruiter' && (
                   <>
                     <Link
