@@ -59,7 +59,13 @@ async function sendResetPasswordEmail({ to, name, token }) {
         <p style="color:#94a3b8;font-size:12px;margin:0">If you didn't request this, you can safely ignore this email. For help, reply to this message or contact our support.</p>
       </div>
 
-      <div style="text-align:center;margin-top:18px;color:#94a3b8;font-size:12px">Support • JobHub Pro<br/>Need help? Email <a href="mailto:${process.env.SUPPORT_EMAIL || 'support@jobhub.example'}" style="color:#64748b">${process.env.SUPPORT_EMAIL || 'support@jobhub.example'}</a></div>
+      <div style="text-align:center;margin-top:18px;color:#94a3b8;font-size:12px">
+        Support • JobHub Pro<br/>
+        Need help? Email 
+        <a href="mailto:${process.env.SUPPORT_EMAIL || 'support@jobhub.example'}" style="color:#64748b">
+          ${process.env.SUPPORT_EMAIL || 'support@jobhub.example'}
+        </a>
+      </div>
     </div>
   </div>
   `;
@@ -72,11 +78,22 @@ async function sendResetPasswordEmail({ to, name, token }) {
     text: `Reset your password: ${resetUrl}`,
   };
 
-  console.log('[Mailer] Sending email with options:', { from: mailOptions.from, to: mailOptions.to, subject: mailOptions.subject });
+  console.log('[Mailer] Sending email with options:', {
+    from: mailOptions.from,
+    to: mailOptions.to,
+    subject: mailOptions.subject,
+  });
 
   try {
+    console.log("🚀 Before sendMail");
+
     const info = await transporter.sendMail(mailOptions);
-    console.log('[Mailer] Email sent successfully:', { messageId: info.messageId, response: info.response });
+
+    console.log("✅ After sendMail");
+    console.log('[Mailer] Email sent successfully:', {
+      messageId: info.messageId,
+      response: info.response,
+    });
 
     // If using Ethereal (no real SMTP env provided), log preview URL
     if (!process.env.EMAIL_HOST || process.env.EMAIL_HOST.includes('ethereal')) {
@@ -86,7 +103,7 @@ async function sendResetPasswordEmail({ to, name, token }) {
 
     return info;
   } catch (error) {
-    console.error('[Mailer] Failed to send email:', error.message);
+    console.error("❌ Email failed:", error.message);
     console.error('[Mailer] Error details:', error);
     throw error;
   }
