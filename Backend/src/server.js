@@ -13,9 +13,9 @@ const PORT = process.env.PORT || 5000;
     // Seed admin user on startup
     await seedAdmin();
     
-    app.listen(PORT, () => {
-      console.log(`Server started on http://localhost:${PORT}`);
-    });
+   app.listen(PORT, () => {
+  console.log(`Server started on port ${PORT}`);
+});
   } catch (err) {
     console.error('Failed to start server:', err);
     process.exit(1);
