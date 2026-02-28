@@ -19,6 +19,7 @@ import JobDetails from './pages/JobDetails';
 import Applicants from './pages/Applicants';
 import ApplicantDetails from './pages/ApplicantDetails';
 import MyJobs from './pages/MyJobs';
+import JobDetailsEdit from './pages/JobDetailsEdit';
 import Messages from './pages/Messages';
 import JobSeekerMessages from './pages/JobSeekerMessages';
 import Notifications from './pages/Notifications';
@@ -168,6 +169,15 @@ function App() {
             element={
               <ProtectedRoute requiredRole="recruiter">
                 <MyJobs />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/recruiter/job-details/:id"
+            element={
+              <ProtectedRoute requiredRole="recruiter">
+                <JobDetailsEdit />
               </ProtectedRoute>
             }
           />

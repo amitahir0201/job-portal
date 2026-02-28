@@ -209,7 +209,7 @@ const MyJobs = () => {
                   {/* Card Footer - Actions */}
                   <div className="px-5 py-4 bg-gray-50 border-t border-green-100 flex gap-2">
                     <button
-                      onClick={() => navigate(`/job-details/${job._id}`)}
+                      onClick={() => navigate(`/recruiter/job-details/${job._id}`)}
                       className="flex-1 px-3 py-2 text-sm border border-green-300 text-green-600 rounded-lg hover:bg-green-50 transition-colors font-medium"
                     >
                       View Details

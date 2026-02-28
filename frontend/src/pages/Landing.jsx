@@ -1,7 +1,42 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Landing = () => {
+  const navigate = useNavigate();
+  const { isAuthenticated, user, loading } = useAuth();
+
+  // Redirect authenticated users to their dashboard
+  useEffect(() => {
+    if (!loading && isAuthenticated && user) {
+      // Redirect based on user role (backend uses 'seeker', but we also support 'jobseeker')
+      if (user.role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else if (user.role === 'recruiter') {
+        navigate('/recruiter', { replace: true });
+      } else if (user.role === 'seeker' || user.role === 'jobseeker') {
+        navigate('/job-seeker', { replace: true });
+      }
+    }
+  }, [isAuthenticated, user, loading, navigate]);
+
+  // Show loading state while checking authentication
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show landing page only for unauthenticated users
+  if (isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="bg-gradient-to-br from-green-50 via-white to-emerald-50 min-h-screen">
       {/* Hero Section */}

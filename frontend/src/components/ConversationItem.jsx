@@ -38,12 +38,11 @@ const ConversationItem = ({
   };
 
   return (
-    <button
+    <div
       onClick={onClick}
-      disabled={isLoading}
-      className={`w-full p-4 border-b border-gray-100 transition-all duration-200 hover:bg-emerald-50 group relative text-left ${
+      className={`w-full p-4 border-b border-gray-100 transition-all duration-200 hover:bg-emerald-50 group relative text-left cursor-pointer ${
         isSelected ? 'bg-emerald-50 border-l-4 border-l-emerald-600 shadow-sm' : ''
-      } disabled:opacity-50 disabled:cursor-not-allowed`}
+      } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
     >
       <div className="flex gap-3">
         {/* Avatar with Status */}
@@ -104,6 +103,7 @@ const ConversationItem = ({
 
       {/* Hover Action Button */}
       <button
+        type="button"
         onClick={(e) => {
           e.stopPropagation();
           setShowMenu(!showMenu);
@@ -112,7 +112,7 @@ const ConversationItem = ({
       >
         <MoreVertical size={16} className="text-gray-400" />
       </button>
-    </button>
+    </div>
   );
 };
 

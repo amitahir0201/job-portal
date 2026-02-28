@@ -13,7 +13,27 @@ const ProtectedRoute = ({ children, requiredRole = null }) => {
     return <Navigate to="/login" replace />;
   }
 
-  if (requiredRole && user?.role !== requiredRole) {
+  // Normalize roles: treat 'seeker' (backend) and 'jobseeker' (frontend) as equivalent
+  const normalizeRole = (role) => {
+    if (role === 'seeker' || role === 'jobseeker') {
+      return 'jobseeker';
+    }
+    return role;
+  };
+
+  const userNormalizedRole = normalizeRole(user?.role);
+  const requiredNormalizedRole = normalizeRole(requiredRole);
+
+  if (requiredNormalizedRole && userNormalizedRole !== requiredNormalizedRole) {
+    // Redirect to appropriate dashboard based on user role to prevent circular redirects
+    if (userNormalizedRole === 'admin') {
+      return <Navigate to="/admin" replace />;
+    } else if (userNormalizedRole === 'recruiter') {
+      return <Navigate to="/recruiter" replace />;
+    } else if (userNormalizedRole === 'jobseeker') {
+      return <Navigate to="/job-seeker" replace />;
+    }
+    // Fallback to home if role is unknown
     return <Navigate to="/" replace />;
   }
 

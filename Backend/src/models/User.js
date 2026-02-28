@@ -4,9 +4,23 @@ const bcrypt = require('bcryptjs');
 const userSchema = new mongoose.Schema(
   {
     fullName: { type: String, required: true },
-    email: { type: String, unique: true, required: true, lowercase: true, index: true },
+
+    email: {
+      type: String,
+      unique: true,
+      required: true,
+      lowercase: true,
+      index: true,
+    },
+
     password: { type: String },
-    role: { type: String, enum: ['admin', 'recruiter', 'seeker'], default: 'seeker' },
+
+    role: {
+      type: String,
+      enum: ['admin', 'recruiter', 'jobseeker'],
+      default: 'jobseeker', // ✅ FIXED
+      lowercase: true,      // ✅ ensures consistency
+    },
 
     // profile
     phone: String,
@@ -26,7 +40,10 @@ const userSchema = new mongoose.Schema(
     certifications: [Object],
     companyName: String, // for recruiters
 
-    savedJobs: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Job' }],
+    savedJobs: [
+      { type: mongoose.Schema.Types.ObjectId, ref: 'Job' }
+    ],
+
     // password reset
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
@@ -36,6 +53,7 @@ const userSchema = new mongoose.Schema(
 
 userSchema.pre('save', async function preSave(next) {
   if (!this.isModified('password')) return next();
+
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);

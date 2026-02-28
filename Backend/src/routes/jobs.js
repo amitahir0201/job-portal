@@ -12,6 +12,7 @@ router.get('/', asyncHandler(jobsController.listJobs));
 router.post('/', auth, role('recruiter'), asyncHandler(jobsController.createJob));
 router.get('/my', auth, role('recruiter'), asyncHandler(jobsController.myJobs));
 router.get('/saved', auth, asyncHandler(jobsController.getSavedJobs));
+router.put('/:id', auth, role('recruiter'), asyncHandler(jobsController.updateJob));
 router.put('/:id/status', auth, role('recruiter'), asyncHandler(jobsController.updateJobStatus));
 router.get('/:id', asyncHandler(jobsController.getJob));
 router.delete('/:id', auth, role('recruiter'), asyncHandler(jobsController.deleteJob));

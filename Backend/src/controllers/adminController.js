@@ -136,3 +136,58 @@ exports.getDashboardStats = async (req, res) => {
     });
   }
 };
+
+/**
+ * Delete a recruiter account
+ * Only accessible by admin users
+ */
+exports.deleteRecruiter = async (req, res) => {
+  try {
+    const { recruiterId } = req.params;
+
+    if (!recruiterId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Recruiter ID is required',
+      });
+    }
+
+    // Find the recruiter
+    const recruiter = await User.findById(recruiterId);
+    if (!recruiter) {
+      return res.status(404).json({
+        success: false,
+        message: 'Recruiter not found',
+      });
+    }
+
+    // Verify it's actually a recruiter
+    if (recruiter.role !== 'recruiter') {
+      return res.status(403).json({
+        success: false,
+        message: 'Can only delete users with recruiter role',
+      });
+    }
+
+    // Delete the recruiter
+    await User.findByIdAndDelete(recruiterId);
+
+    console.log(`[Admin] Deleted recruiter account: ${recruiter.email}`);
+
+    return res.json({
+      success: true,
+      message: `Recruiter ${recruiter.fullName} has been deleted successfully`,
+      recruiter: {
+        id: recruiter._id,
+        fullName: recruiter.fullName,
+        email: recruiter.email,
+      },
+    });
+  } catch (error) {
+    console.error('[Admin] Error deleting recruiter:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Failed to delete recruiter',
+    });
+  }
+};

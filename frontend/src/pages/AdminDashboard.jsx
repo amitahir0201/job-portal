@@ -11,6 +11,7 @@ import {
   Building2,
   CheckCircle,
   AlertCircle,
+  Trash2,
 } from 'lucide-react';
 
 const AdminDashboard = () => {
@@ -43,6 +44,7 @@ const AdminDashboard = () => {
   const [error, setError] = useState('');
   const [loadingStats, setLoadingStats] = useState(true);
   const [loadingRecruiters, setLoadingRecruiters] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
 
   // Fetch dashboard stats
   useEffect(() => {
@@ -153,6 +155,58 @@ const AdminDashboard = () => {
       console.error('[AdminDashboard] Error:', err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteRecruiter = async (recruiterId, recruiterName) => {
+    // Confirm deletion
+    if (!window.confirm(`Are you sure you want to delete recruiter "${recruiterName}"? This action cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      setDeletingId(recruiterId);
+      setError('');
+
+      // Get token from localStorage for debugging
+      const token = localStorage.getItem('token');
+      console.log('[AdminDashboard] Attempting to delete recruiter:', {
+        recruiterId,
+        recruiterName,
+        hasToken: !!token,
+        tokenLength: token ? token.length : 0
+      });
+
+      const response = await api.delete(`/admin/recruiters/${recruiterId}`);
+
+      if (response.data.success) {
+        // Remove the deleted recruiter from the list
+        setRecruiters(recruiters.filter(r => r._id !== recruiterId));
+        setSuccess(`✅ ${recruiterName} has been deleted successfully`);
+        
+        // Refresh stats
+        const statsRes = await api.get('/admin/dashboard-stats');
+        if (statsRes.data.success) {
+          setStats(statsRes.data.stats);
+        }
+
+        // Clear success message after 5 seconds
+        setTimeout(() => setSuccess(''), 5000);
+      }
+    } catch (err) {
+      console.log('[AdminDashboard] Delete Error Details:', {
+        status: err.response?.status,
+        message: err.response?.data?.message,
+        url: err.config?.url,
+        headers: err.config?.headers,
+        fullError: err
+      });
+      
+      const errorMessage = err.response?.data?.message || 'Failed to delete recruiter';
+      setError(errorMessage);
+      console.error('[AdminDashboard] Delete Error:', err);
+    } finally {
+      setDeletingId(null);
     }
   };
 
@@ -376,6 +430,24 @@ const AdminDashboard = () => {
                         <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-full">
                           Recruiter
                         </span>
+                        <button
+                          onClick={() => handleDeleteRecruiter(recruiter._id, recruiter.fullName)}
+                          disabled={deletingId === recruiter._id}
+                          className="px-3 py-1 bg-red-100 text-red-700 hover:bg-red-200 text-xs font-semibold rounded transition-colors disabled:bg-gray-200 disabled:text-gray-400 flex items-center gap-1"
+                          title="Delete recruiter"
+                        >
+                          {deletingId === recruiter._id ? (
+                            <>
+                              <div className="w-3 h-3 border-2 border-red-700 border-t-transparent rounded-full animate-spin"></div>
+                              Deleting...
+                            </>
+                          ) : (
+                            <>
+                              <Trash2 className="w-3 h-3" />
+                              Delete
+                            </>
+                          )}
+                        </button>
                       </div>
                     </div>
                   ))}

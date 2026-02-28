@@ -1,6 +1,6 @@
 import { Link2, Github, Linkedin, FolderOpen } from 'lucide-react';
 
-const LinkOption = ({ icon, label, linkType, required, optional, onChange }) => {
+const LinkOption = ({ icon, label, linkType, value, onChange }) => {
   return (
     <div className="flex items-center justify-between p-4 border border-green-200 rounded-lg hover:bg-green-50 transition-colors">
       <div className="flex items-center gap-3">
@@ -10,25 +10,42 @@ const LinkOption = ({ icon, label, linkType, required, optional, onChange }) => 
         </label>
       </div>
 
-      <div className="flex items-center gap-4">
-        {/* Required Toggle */}
+      <div className="flex items-center gap-6">
+        {/* None Option */}
         <label className="flex items-center gap-2 cursor-pointer">
           <input
-            type="checkbox"
-            checked={required}
-            onChange={(e) => onChange(linkType, 'required', e.target.checked)}
-            className="w-4 h-4 rounded text-green-600 accent-green-600"
+            type="radio"
+            name={`link-${linkType}`}
+            value="none"
+            checked={value === 'none'}
+            onChange={(e) => onChange(linkType, e.target.value)}
+            className="w-4 h-4 text-green-600 accent-green-600"
+          />
+          <span className="text-sm text-gray-600">None</span>
+        </label>
+
+        {/* Required Option */}
+        <label className="flex items-center gap-2 cursor-pointer">
+          <input
+            type="radio"
+            name={`link-${linkType}`}
+            value="required"
+            checked={value === 'required'}
+            onChange={(e) => onChange(linkType, e.target.value)}
+            className="w-4 h-4 text-green-600 accent-green-600"
           />
           <span className="text-sm text-gray-600">Required</span>
         </label>
 
-        {/* Optional Toggle */}
+        {/* Optional Option */}
         <label className="flex items-center gap-2 cursor-pointer">
           <input
-            type="checkbox"
-            checked={optional}
-            onChange={(e) => onChange(linkType, 'optional', e.target.checked)}
-            className="w-4 h-4 rounded text-green-600 accent-green-600"
+            type="radio"
+            name={`link-${linkType}`}
+            value="optional"
+            checked={value === 'optional'}
+            onChange={(e) => onChange(linkType, e.target.value)}
+            className="w-4 h-4 text-green-600 accent-green-600"
           />
           <span className="text-sm text-gray-600">Optional</span>
         </label>
@@ -61,6 +78,10 @@ const RequiredLinksToggle = ({ requiredLinks, onChange }) => {
     },
   ];
 
+  const handleLinkChange = (linkType, newValue) => {
+    onChange(linkType, newValue);
+  };
+
   return (
     <div className="space-y-3">
       {linkOptions.map((option) => (
@@ -69,15 +90,14 @@ const RequiredLinksToggle = ({ requiredLinks, onChange }) => {
           icon={option.icon}
           label={option.label}
           linkType={option.key}
-          required={requiredLinks[option.key]?.required || false}
-          optional={requiredLinks[option.key]?.optional || false}
-          onChange={onChange}
+          value={requiredLinks[option.key] || 'none'}
+          onChange={handleLinkChange}
         />
       ))}
 
       <div className="p-4 bg-green-50 rounded-lg border border-green-200">
         <p className="text-sm text-green-800">
-          <strong>Tip:</strong> Mark links as "Required" or "Optional" so candidates know what to provide. You can choose both for flexibility.
+          <strong>Tip:</strong> Select "Required", "Optional", or "None" for each link. Candidates will know what to provide.
         </p>
       </div>
     </div>

@@ -7,11 +7,6 @@ const customQuestionSchema = new mongoose.Schema({
   required: { type: Boolean, default: false },
 }, { _id: true });
 
-const linkRequirementSchema = new mongoose.Schema({
-  required: { type: Boolean, default: false },
-  optional: { type: Boolean, default: false },
-}, { _id: false });
-
 const jobSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: String,
@@ -29,10 +24,10 @@ const jobSchema = new mongoose.Schema({
   views: { type: Number, default: 0 },
   applicationsCount: { type: Number, default: 0 },
   requiredLinks: {
-    linkedin: { type: linkRequirementSchema, default: () => ({}) },
-    github: { type: linkRequirementSchema, default: () => ({}) },
-    portfolio: { type: linkRequirementSchema, default: () => ({}) },
-    majorProject: { type: linkRequirementSchema, default: () => ({}) },
+    linkedin: { type: String, enum: ['none', 'required', 'optional'], default: 'none' },
+    github: { type: String, enum: ['none', 'required', 'optional'], default: 'none' },
+    portfolio: { type: String, enum: ['none', 'required', 'optional'], default: 'none' },
+    majorProject: { type: String, enum: ['none', 'required', 'optional'], default: 'none' },
   },
   customQuestions: [customQuestionSchema],
   postedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },

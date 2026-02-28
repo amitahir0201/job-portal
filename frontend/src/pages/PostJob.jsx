@@ -35,10 +35,10 @@ const PostJob = () => {
     applicationDeadline: '',
     customQuestions: [],
     requiredLinks: {
-      portfolio: { required: false, optional: false },
-      linkedin: { required: false, optional: false },
-      github: { required: false, optional: false },
-      majorProject: { required: false, optional: false },
+      portfolio: 'none',
+      linkedin: 'none',
+      github: 'none',
+      majorProject: 'none',
     },
     status: 'Draft',
   });
@@ -55,8 +55,6 @@ const PostJob = () => {
     if (!formData.title.trim()) newErrors.title = 'Job title is required';
     if (!formData.location.trim()) newErrors.location = 'Location is required';
     if (!formData.description.trim()) newErrors.description = 'Description is required';
-    if (formData.description.length < 50)
-      newErrors.description = 'Description must be at least 50 characters';
 
     if (formData.salaryMin && formData.salaryMax && formData.salaryMin > formData.salaryMax) {
       newErrors.salary = 'Minimum salary cannot exceed maximum salary';
@@ -145,15 +143,12 @@ const PostJob = () => {
   };
 
   // Handle required links
-  const handleUpdateRequiredLinks = (linkType, field, value) => {
+  const handleUpdateRequiredLinks = (linkType, value) => {
     setFormData((prev) => ({
       ...prev,
       requiredLinks: {
         ...prev.requiredLinks,
-        [linkType]: {
-          ...prev.requiredLinks[linkType],
-          [field]: value,
-        },
+        [linkType]: value,
       },
     }));
   };
@@ -226,10 +221,10 @@ const PostJob = () => {
           applicationDeadline: '',
           customQuestions: [],
           requiredLinks: {
-            portfolio: { required: false, optional: false },
-            linkedin: { required: false, optional: false },
-            github: { required: false, optional: false },
-            majorProject: { required: false, optional: false },
+            portfolio: 'none',
+            linkedin: 'none',
+            github: 'none',
+            majorProject: 'none',
           },
           status: 'Draft',
         });
@@ -245,11 +240,11 @@ const PostJob = () => {
 
   return (
     <RecruiterLayout>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-6 sm:py-8 px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Toast Notification */}
         {toast && (
           <div
-            className={`fixed top-4 right-4 p-4 rounded-xl shadow-xl flex items-center gap-2 z-50 animate-in fade-in slide-in-from-top ${
+            className={`fixed top-3 sm:top-4 right-3 sm:right-4 p-3 sm:p-4 rounded-xl shadow-xl flex items-center gap-2 z-50 animate-in fade-in slide-in-from-top text-sm sm:text-base ${
               toast.type === 'success'
                 ? 'bg-green-600 text-white border border-green-700'
                 : 'bg-red-600 text-white border border-red-700'
@@ -266,19 +261,19 @@ const PostJob = () => {
 
         <div className="max-w-5xl mx-auto">
           {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
               Post a New Job
             </h1>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Fill in the details below to create and publish a job posting
             </p>
           </div>
 
           {/* Main Form */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 pb-32">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 pb-32">
             {/* Left Column */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
               {/* Basic Information */}
               <SectionCard
                 title="Basic Information"
@@ -288,7 +283,7 @@ const PostJob = () => {
                 <div className="space-y-4">
                   {/* Job Title */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
                       Job Title *
                     </label>
                     <input
@@ -298,14 +293,14 @@ const PostJob = () => {
                       onChange={handleInputChange}
                       onBlur={handleBlur}
                       placeholder="e.g., Senior React Developer"
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white ${
+                      className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white ${
                         errors.title && touched.title
                           ? 'border-red-500 bg-red-50'
                           : 'border-green-300 hover:border-green-400'
                       }`}
                     />
                     {errors.title && touched.title && (
-                      <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                      <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
                         <AlertCircle size={14} /> {errors.title}
                       </p>
                     )}
@@ -313,11 +308,11 @@ const PostJob = () => {
 
                   {/* Location */}
                   <div>
-                    <label className="block text-sm font-semibold text-gray-900 mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
                       Location *
                     </label>
                     <div className="flex items-center gap-2">
-                      <MapPin size={18} className="text-green-600" />
+                      <MapPin size={18} className="text-green-600 flex-shrink-0" />
                       <input
                         type="text"
                         name="location"
@@ -325,7 +320,7 @@ const PostJob = () => {
                         onChange={handleInputChange}
                         onBlur={handleBlur}
                         placeholder="e.g., San Francisco, CA"
-                        className={`flex-1 px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white ${
+                        className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white ${
                           errors.location && touched.location
                             ? 'border-red-500 bg-red-50'
                             : 'border-green-300 hover:border-green-400'
@@ -333,23 +328,23 @@ const PostJob = () => {
                       />
                     </div>
                     {errors.location && touched.location && (
-                      <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                      <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
                         <AlertCircle size={14} /> {errors.location}
                       </p>
                     )}
                   </div>
 
                   {/* Job Type & Experience Level */}
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
                         Job Type
                       </label>
                       <select
                         name="jobType"
                         value={formData.jobType}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium"
                       >
                         <option>Full-Time</option>
                         <option>Part-Time</option>
@@ -360,14 +355,14 @@ const PostJob = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
                         Experience Level
                       </label>
                       <select
                         name="experienceLevel"
                         value={formData.experienceLevel}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium"
                       >
                         <option>Entry</option>
                         <option>Mid</option>
@@ -386,9 +381,9 @@ const PostJob = () => {
                 description="Optional - Leave blank if not disclosing"
               >
                 <div className="space-y-4">
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
                         Minimum Salary
                       </label>
                       <input
@@ -397,12 +392,12 @@ const PostJob = () => {
                         value={formData.salaryMin}
                         onChange={handleInputChange}
                         placeholder="50000"
-                        className="w-full px-4 py-3 border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
                         Maximum Salary
                       </label>
                       <input
@@ -411,19 +406,19 @@ const PostJob = () => {
                         value={formData.salaryMax}
                         onChange={handleInputChange}
                         placeholder="100000"
-                        className="w-full px-4 py-3 border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-sm font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
                         Currency
                       </label>
                       <select
                         name="currency"
                         value={formData.currency}
                         onChange={handleInputChange}
-                        className="w-full px-4 py-3 border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium"
+                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium"
                       >
                         <option>USD</option>
                         <option>EUR</option>
@@ -447,7 +442,7 @@ const PostJob = () => {
                 description="Provide detailed information about the role"
               >
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
                     Description *
                   </label>
                   <textarea
@@ -457,21 +452,21 @@ const PostJob = () => {
                     onBlur={handleBlur}
                     placeholder="Describe the job role, responsibilities, and what you're looking for..."
                     rows="8"
-                    className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all resize-none font-medium bg-white ${
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all resize-none font-medium bg-white ${
                       errors.description && touched.description
                         ? 'border-red-500 bg-red-50'
                         : 'border-green-300 hover:border-green-400'
                     }`}
                   />
-                  <div className="flex justify-between items-center mt-2">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-2 gap-2">
                     <div>
                       {errors.description && touched.description && (
-                        <p className="text-red-500 text-sm flex items-center gap-1">
+                        <p className="text-red-500 text-xs sm:text-sm flex items-center gap-1">
                           <AlertCircle size={14} /> {errors.description}
                         </p>
                       )}
                     </div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-xs sm:text-sm text-gray-500 whitespace-nowrap">
                       {formData.description.length} / 5000 characters
                     </p>
                   </div>
@@ -498,11 +493,11 @@ const PostJob = () => {
                 description="When should applications close?"
               >
                 <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
                     Deadline (Optional)
                   </label>
                   <div className="flex items-center gap-2">
-                    <Calendar size={18} className="text-green-600" />
+                    <Calendar size={18} className="text-green-600 flex-shrink-0" />
                     <input
                       type="date"
                       name="applicationDeadline"
@@ -510,7 +505,7 @@ const PostJob = () => {
                       onChange={handleInputChange}
                       onBlur={handleBlur}
                       min={new Date().toISOString().split('T')[0]}
-                      className={`flex-1 px-4 py-3 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium ${
+                      className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium ${
                         errors.applicationDeadline && touched.applicationDeadline
                           ? 'border-red-500 bg-red-50'
                           : 'border-green-300 hover:border-green-400'
@@ -518,7 +513,7 @@ const PostJob = () => {
                     />
                   </div>
                   {errors.applicationDeadline && touched.applicationDeadline && (
-                    <p className="text-red-500 text-sm mt-1 flex items-center gap-1">
+                    <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
                       <AlertCircle size={14} /> {errors.applicationDeadline}
                     </p>
                   )}
@@ -613,16 +608,16 @@ const PostJob = () => {
 
             {/* Right Column - Summary */}
             <div className="lg:col-span-1 lg:sticky lg:top-8 h-fit">
-              <div className="bg-white rounded-xl shadow-lg p-6 border border-green-200">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-green-200">
+                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
                   Job Summary
                 </h3>
 
-                <div className="space-y-3 text-sm">
+                <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                   {formData.title && (
                     <div>
-                      <p className="text-green-600 font-semibold">Title</p>
-                      <p className="font-medium text-gray-900 truncate">
+                      <p className="text-green-600 font-semibold text-xs">Title</p>
+                      <p className="font-medium text-gray-900 truncate text-xs sm:text-sm">
                         {formData.title}
                       </p>
                     </div>
@@ -630,29 +625,29 @@ const PostJob = () => {
 
                   {formData.location && (
                     <div>
-                      <p className="text-green-600 font-semibold">Location</p>
-                      <p className="font-medium text-gray-900">
+                      <p className="text-green-600 font-semibold text-xs">Location</p>
+                      <p className="font-medium text-gray-900 text-xs sm:text-sm">
                         {formData.location}
                       </p>
                     </div>
                   )}
 
                   <div>
-                    <p className="text-green-600 font-semibold">Job Type</p>
-                    <p className="font-medium text-gray-900">{formData.jobType}</p>
+                    <p className="text-green-600 font-semibold text-xs">Job Type</p>
+                    <p className="font-medium text-gray-900 text-xs sm:text-sm">{formData.jobType}</p>
                   </div>
 
                   <div>
-                    <p className="text-green-600 font-semibold">Experience Level</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-green-600 font-semibold text-xs">Experience Level</p>
+                    <p className="font-medium text-gray-900 text-xs sm:text-sm">
                       {formData.experienceLevel}
                     </p>
                   </div>
 
                   {(formData.salaryMin || formData.salaryMax) && (
                     <div>
-                      <p className="text-green-600 font-semibold">Salary Range</p>
-                      <p className="font-medium text-gray-900">
+                      <p className="text-green-600 font-semibold text-xs">Salary Range</p>
+                      <p className="font-medium text-gray-900 text-xs sm:text-sm">
                         {formData.salaryMin && `${formData.currency} ${formData.salaryMin}`}
                         {formData.salaryMin && formData.salaryMax && ' - '}
                         {formData.salaryMax && `${formData.currency} ${formData.salaryMax}`}
@@ -662,18 +657,18 @@ const PostJob = () => {
 
                   {formData.requiredSkills.length > 0 && (
                     <div>
-                      <p className="text-green-600 font-semibold">Skills</p>
-                      <div className="flex flex-wrap gap-2 mt-2">
+                      <p className="text-green-600 font-semibold text-xs">Skills</p>
+                      <div className="flex flex-wrap gap-1 sm:gap-2 mt-1 sm:mt-2">
                         {formData.requiredSkills.slice(0, 3).map((skill) => (
                           <span
                             key={skill}
-                            className="px-3 py-1.5 bg-green-100 text-green-700 rounded-full text-xs font-semibold"
+                            className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold"
                           >
                             {skill}
                           </span>
                         ))}
                         {formData.requiredSkills.length > 3 && (
-                          <span className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
+                          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
                             +{formData.requiredSkills.length - 3}
                           </span>
                         )}
@@ -683,17 +678,17 @@ const PostJob = () => {
 
                   {formData.applicationDeadline && (
                     <div>
-                      <p className="text-green-600 font-semibold">Deadline</p>
-                      <p className="font-medium text-gray-900">
+                      <p className="text-green-600 font-semibold text-xs">Deadline</p>
+                      <p className="font-medium text-gray-900 text-xs sm:text-sm">
                         {new Date(formData.applicationDeadline).toLocaleDateString()}
                       </p>
                     </div>
                   )}
 
-                  <div className="pt-4 border-t border-green-200">
-                    <p className="text-green-600 font-semibold mb-2">Status</p>
+                  <div className="pt-2 sm:pt-4 border-t border-green-200">
+                    <p className="text-green-600 font-semibold mb-1 sm:mb-2 text-xs">Status</p>
                     <span
-                      className={`inline-block px-4 py-1.5 rounded-full text-xs font-bold ${
+                      className={`inline-block px-3 py-1.5 rounded-full text-xs font-bold ${
                         formData.status === 'Active'
                           ? 'bg-green-100 text-green-700'
                           : 'bg-yellow-100 text-yellow-700'
@@ -709,11 +704,11 @@ const PostJob = () => {
 
           {/* Sticky Action Footer */}
           <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-green-200 shadow-2xl">
-            <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex gap-3 justify-end">
+            <div className="max-w-5xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end">
               <button
                 onClick={handleSaveDraft}
                 disabled={loading}
-                className="flex items-center gap-2 px-6 py-3 border-2 border-green-300 rounded-lg text-green-700 hover:bg-green-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 border-2 border-green-300 rounded-lg text-green-700 hover:bg-green-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base"
               >
                 <Save size={18} />
                 Save Draft
@@ -722,7 +717,7 @@ const PostJob = () => {
               <button
                 onClick={handlePublish}
                 disabled={loading}
-                className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl"
+                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl text-sm sm:text-base"
               >
                 <Send size={18} />
                 {loading ? 'Publishing...' : 'Publish Job'}

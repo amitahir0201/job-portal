@@ -39,4 +39,13 @@ router.get(
   asyncHandler(adminController.getDashboardStats)
 );
 
+// DELETE /api/admin/recruiters/:recruiterId
+// Delete a recruiter account (admin only)
+router.delete(
+  '/recruiters/:recruiterId',
+  asyncHandler(auth),
+  asyncHandler(authorize('admin')),
+  asyncHandler(adminController.deleteRecruiter)
+);
+
 module.exports = router;
