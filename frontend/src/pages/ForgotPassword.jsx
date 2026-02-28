@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { sendResetPasswordEmail } from '../services/emailService';
 
 const ForgotPassword = () => {
   const navigate = useNavigate();
@@ -20,7 +21,6 @@ const ForgotPassword = () => {
     setError('');
     setSuccess('');
 
-    // Validation
     if (!email.trim()) {
       return setError('Please enter your email address');
     }
@@ -31,24 +31,50 @@ const ForgotPassword = () => {
 
     try {
       setLoading(true);
+
+      // 1️⃣ Call backend to generate reset token
+      console.log('[ForgotPassword] Requesting password reset for:', email);
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/forgot-password`,
         { email: email.toLowerCase().trim() }
       );
 
-      if (response.data?.success) {
-        setSuccess('Check your email for password reset instructions.');
-        setEmail('');
-
-        // Redirect to login after 4 seconds
-        setTimeout(() => {
-          navigate('/login');
-        }, 4000);
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || "Something went wrong");
       }
+
+      console.log('[ForgotPassword] Backend response:', response.data);
+      
+      const { name, resetUrl } = response.data;
+
+      // 2️⃣ Send email via EmailJS with DYNAMIC recipient email
+      console.log('[ForgotPassword] Sending reset email to:', email);
+      const emailResult = await sendResetPasswordEmail(
+        email, // ✅ Dynamic: recipient's email
+        name || 'User', // ✅ Dynamic: user's name
+        resetUrl // ✅ Reset link from backend
+      );
+
+      if (!emailResult.success) {
+        throw new Error(emailResult.message);
+      }
+
+      console.log('[ForgotPassword] Email sent successfully');
+      setSuccess('Check your email for password reset instructions.');
+      setEmail('');
+
+      // Redirect to login after 4 seconds
+      setTimeout(() => {
+        navigate('/login');
+      }, 4000);
+
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Unable to process request. Please try again.';
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        'Unable to process request. Please try again.';
       setError(errorMessage);
-      console.error('Forgot password error:', err);
+      console.error('[ForgotPassword] Error:', err);
     } finally {
       setLoading(false);
     }
@@ -58,6 +84,7 @@ const ForgotPassword = () => {
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-xl shadow-2xl p-8">
+          
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 mb-2">Forgot Password?</h1>
@@ -125,6 +152,7 @@ const ForgotPassword = () => {
               </button>
             </p>
           </div>
+
         </div>
       </div>
     </div>

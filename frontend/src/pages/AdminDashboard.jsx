@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
+import { sendRecruiterInvitationEmail } from '../services/emailService';
 import {
   Briefcase,
   Users,
@@ -104,6 +105,9 @@ const AdminDashboard = () => {
 
     try {
       setLoading(true);
+      console.log('[AdminDashboard] Creating recruiter:', formData.email);
+
+      // 1️⃣ Call backend to create recruiter
       const response = await api.post('/admin/create-recruiter', {
         fullName: formData.fullName,
         email: formData.email,
@@ -111,10 +115,30 @@ const AdminDashboard = () => {
       });
 
       if (response.data.success) {
-        setSuccess(response.data.message);
+        console.log('[AdminDashboard] Recruiter created successfully');
+
+        // 2️⃣ Send invitation email via EmailJS
+        if (response.data.emailData) {
+          console.log('[AdminDashboard] Sending invitation email to:', response.data.emailData.to_email);
+          
+          const emailResult = await sendRecruiterInvitationEmail(
+            response.data.emailData.to_email,      // recruiter's email
+            response.data.emailData.user_name,     // recruiter's name
+            response.data.emailData.reset_link     // password setup link
+          );
+
+          if (emailResult.success) {
+            console.log('[AdminDashboard] Email sent successfully');
+            setSuccess(`✅ Recruiter created! Password setup email sent to ${formData.email}`);
+          } else {
+            console.error('[AdminDashboard] Email failed:', emailResult.message);
+            setSuccess(`✅ Recruiter created but email failed. Try resending later.`);
+          }
+        }
+
         setFormData({ fullName: '', email: '', companyName: '' });
         
-        // Refresh recruiters list
+        // 3️⃣ Refresh recruiters list
         const recruitersRes = await api.get('/admin/recruiters');
         if (recruitersRes.data.success) {
           setRecruiters(recruitersRes.data.recruiters);
@@ -124,7 +148,9 @@ const AdminDashboard = () => {
         setTimeout(() => setSuccess(''), 5000);
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create recruiter');
+      const errorMessage = err.response?.data?.message || 'Failed to create recruiter';
+      setError(errorMessage);
+      console.error('[AdminDashboard] Error:', err);
     } finally {
       setLoading(false);
     }
