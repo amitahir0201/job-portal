@@ -1,39 +1,51 @@
-const express = require('express');
-const cors = require('cors');
-const morgan = require('morgan');
-const path = require('path');
+const express = require("express");
+const cors = require("cors");
+const morgan = require("morgan");
+const path = require("path");
 
-const authRoutes = require('./routes/auth');
-const adminRoutes = require('./routes/admin');
-const profileRoutes = require('./routes/profile');
-const jobRoutes = require('./routes/jobs');
-const applicationRoutes = require('./routes/applications');
-const messageRoutes = require('./routes/messages');
-const notificationRoutes = require('./routes/notifications');
+const authRoutes = require("./routes/auth");
+const adminRoutes = require("./routes/admin");
+const profileRoutes = require("./routes/profile");
+const jobRoutes = require("./routes/jobs");
+const applicationRoutes = require("./routes/applications");
+const messageRoutes = require("./routes/messages");
+const notificationRoutes = require("./routes/notifications");
 
-const { errorHandler } = require('./middleware/errorHandler');
+const { errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
-app.use(cors());
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true }));
-app.use(morgan('dev'));
+// ✅ Proper CORS setup
+app.use(
+  cors({
+    origin: [
+      "https://jobhubnow.vercel.app",
+      "http://localhost:3000"
+    ],
+    credentials: true,
+  })
+);
 
-// Public health
-app.get('/api/health', (req, res) => res.json({ ok: true, ts: Date.now() }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true }));
+app.use(morgan("dev"));
+
+// Health check
+app.get("/api/health", (req, res) =>
+  res.json({ ok: true, ts: Date.now() })
+);
 
 // Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/admin', adminRoutes);
-app.use('/api/profile', profileRoutes);
-app.use('/api/jobs', jobRoutes);
-app.use('/api/applications', applicationRoutes);
-app.use('/api/messages', messageRoutes);
-app.use('/api/notifications', notificationRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/jobs", jobRoutes);
+app.use("/api/applications", applicationRoutes);
+app.use("/api/messages", messageRoutes);
+app.use("/api/notifications", notificationRoutes);
 
-// Static uploads (for local dev)
-app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+// Static uploads
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 app.use(errorHandler);
 
