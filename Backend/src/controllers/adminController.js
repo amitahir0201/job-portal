@@ -117,7 +117,7 @@ exports.getDashboardStats = async (req, res) => {
     const totalUsers = await User.countDocuments();
     const adminUsers = await User.countDocuments({ role: 'admin' });
     const recruiterUsers = await User.countDocuments({ role: 'recruiter' });
-    const seekerUsers = await User.countDocuments({ role: 'seeker' });
+    const seekerUsers = await User.countDocuments({ role: 'jobseeker' });
 
     return res.json({
       success: true,

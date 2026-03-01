@@ -12,189 +12,162 @@ const generateToken = (user) => {
 
 /* ================= REGISTER ================= */
 exports.register = async (req, res) => {
-  const { name, fullName, email, password, companyName } = req.body;
+  try {
+    const { name, fullName, email, password, companyName } = req.body;
 
-  const normalizedEmail = String(email || '').trim().toLowerCase();
-  const resolvedName = String(fullName || name || '').trim();
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const resolvedName = String(fullName || name || '').trim();
 
-  if (!resolvedName || !normalizedEmail || !password) {
-    return res.status(400).json({ success: false, message: 'Missing fields' });
-  }
-
-  const existing = await User.findOne({ email: normalizedEmail });
-  if (existing) {
-    return res.status(409).json({ success: false, message: 'User already exists' });
-  }
-
-  const user = await User.create({
-    fullName: resolvedName,
-    email: normalizedEmail,
-    password,
-    role: 'seeker',
-    companyName,
-  });
-
-  const token = generateToken(user);
-
-  res.json({
-    success: true,
-    user: {
-      id: user._id,
-      fullName: user.fullName,
-      name: user.fullName,
-      email: user.email,
-      role: user.role,
-      companyName: user.companyName,
-    },
-    token,
-  });
-};
-
-/* ================= FORGOT PASSWORD ================= */
-exports.forgotPassword = async (req, res) => {
-  const { email } = req.body || {};
-
-  if (!email) {
-    return res.status(400).json({ success: false, message: 'Email is required' });
-  }
-
-  const normalizedEmail = String(email).trim().toLowerCase();
-  const user = await User.findOne({ email: normalizedEmail });
-
-  // Always return success (security best practice)
-  if (!user) {
-    return res.json({
-      success: true,
-      message: 'If an account exists, a reset link has been sent.'
-    });
-  }
-
-  // Generate reset token
-  const token = crypto.randomBytes(32).toString('hex');
-  const hashed = crypto.createHash('sha256').update(token).digest('hex');
-
-  // Save hashed token + expiry (15 min)
-  await User.updateOne(
-    { _id: user._id },
-    {
-      $set: {
-        resetPasswordToken: hashed,
-        resetPasswordExpires: Date.now() + 15 * 60 * 1000
-      }
+    if (!resolvedName || !normalizedEmail || !password) {
+      return res.status(400).json({ success: false, message: 'Missing fields' });
     }
-  );
 
-  // Create reset URL
-  const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+    const existing = await User.findOne({ email: normalizedEmail });
+    if (existing) {
+      return res.status(409).json({ success: false, message: 'User already exists' });
+    }
 
-  return res.json({
-    success: true,
-    name: user.fullName,
-    resetUrl,
-  });
-};
-
-/* ================= RESET PASSWORD ================= */
-exports.resetPassword = async (req, res) => {
-  const rawToken = req.params.token;
-  const { password } = req.body || {};
-
-  if (!rawToken) {
-    return res.status(400).json({ success: false, message: 'Invalid token' });
-  }
-
-  if (!password || String(password).length < 6) {
-    return res.status(400).json({
-      success: false,
-      message: 'Password must be at least 6 characters'
+    // Create user with jobseeker role
+    const user = await User.create({
+      fullName: resolvedName,
+      email: normalizedEmail,
+      password,
+      role: 'jobseeker',
+      companyName,
     });
-  }
 
-  const hashed = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const token = generateToken(user);
 
-  const user = await User.findOne({
-    resetPasswordToken: hashed,
-    resetPasswordExpires: { $gt: Date.now() }
-  });
-
-  if (!user) {
-    return res.status(400).json({
-      success: false,
-      message: 'Token is invalid or has expired'
+    res.status(201).json({
+      success: true,
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        companyName: user.companyName,
+      },
+      token,
     });
+  } catch (error) {
+    console.error("Registration Error:", error);
+    res.status(500).json({ success: false, message: error.message });
   }
-
-  user.password = password; // hashed by pre-save hook
-  user.resetPasswordToken = undefined;
-  user.resetPasswordExpires = undefined;
-
-  await user.save({ validateBeforeSave: false });
-
-  return res.json({
-    success: true,
-    message: 'Password has been reset successfully'
-  });
 };
 
 /* ================= LOGIN ================= */
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
 
-  if (!email || !password) {
-    return res.status(400).json({ success: false, message: 'Missing email or password' });
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Missing email or password' });
+    }
+
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user || !(await user.matchPassword(password))) {
+      return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    const token = generateToken(user);
+
+    res.json({
+      success: true,
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+        companyName: user.companyName,
+      },
+      token,
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Server error during login' });
   }
+};
 
-  const normalizedEmail = String(email).trim().toLowerCase();
-  const user = await User.findOne({ email: normalizedEmail });
+/* ================= FORGOT PASSWORD ================= */
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body || {};
+    if (!email) return res.status(400).json({ success: false, message: 'Email is required' });
 
-  if (!user) {
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    const normalizedEmail = String(email).trim().toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user) {
+      return res.json({ success: true, message: 'If an account exists, a reset link has been sent.' });
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    const hashed = crypto.createHash('sha256').update(token).digest('hex');
+
+    await User.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          resetPasswordToken: hashed,
+          resetPasswordExpires: Date.now() + 15 * 60 * 1000
+        }
+      }
+    );
+
+    const resetUrl = `${process.env.FRONTEND_URL}/reset-password/${token}`;
+    return res.json({ success: true, name: user.fullName, resetUrl });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error processing forgot password' });
   }
+};
 
-  const ok = await user.matchPassword(password);
-  if (!ok) {
-    return res.status(401).json({ success: false, message: 'Invalid credentials' });
+/* ================= RESET PASSWORD ================= */
+exports.resetPassword = async (req, res) => {
+  try {
+    const rawToken = req.params.token;
+    const { password } = req.body || {};
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ success: false, message: 'Password too short' });
+    }
+
+    const hashed = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const user = await User.findOne({
+      resetPasswordToken: hashed,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ success: false, message: 'Token invalid or expired' });
+    }
+
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ success: true, message: 'Password reset successfully' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Error resetting password' });
   }
-
-  const token = generateToken(user);
-
-  res.json({
-    success: true,
-    user: {
-      id: user._id,
-      fullName: user.fullName,
-      name: user.fullName,
-      email: user.email,
-      role: user.role,
-      companyName: user.companyName,
-    },
-    token,
-  });
 };
 
 /* ================= GET PROFILE ================= */
 exports.getProfile = async (req, res) => {
-  let token = null;
-  const authHeader = req.headers.authorization;
-
-  if (authHeader && authHeader.startsWith('Bearer ')) {
-    token = authHeader.split(' ')[1];
-  }
-
-  if (!token) {
-    return res.status(401).json({ success: false, message: 'No token' });
-  }
-
   try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith('Bearer ')) {
+      return res.status(401).json({ success: false, message: 'No token' });
+    }
+
+    const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const user = await User.findById(decoded.id).select('-password');
 
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
     res.json({ success: true, profile: user });
-
   } catch (err) {
     res.status(401).json({ success: false, message: 'Invalid token' });
   }
