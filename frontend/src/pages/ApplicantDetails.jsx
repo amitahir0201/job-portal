@@ -836,7 +836,7 @@ const ApplicantDetails = () => {
                         {/* PDF Viewer */}
                         <div className="w-full bg-secondary-100 rounded-lg overflow-hidden border border-secondary-300">
                           <iframe
-                            src={`${resumeURL.startsWith('http') ? resumeURL : `http://localhost:5000${resumeURL}`}#toolbar=1&navpanes=0&scrollbar=1`}
+                            src={`${resumeURL.startsWith('http') ? resumeURL : `https://job-portal-3jkf.onrender.com${resumeURL}`}#toolbar=1&navpanes=0&scrollbar=1`}
                             title="Resume PDF"
                             className="w-full h-[600px] sm:h-[800px] border-none"
                             loading="lazy"
