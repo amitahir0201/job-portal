@@ -38,7 +38,7 @@ const ApplicationDetailsModal = ({ application, isOpen, onClose, onWithdraw }) =
       // Build full URL if it's a relative path
       let fullUrl = resumeUrl;
       if (!resumeUrl.startsWith('http')) {
-        fullUrl = `http://localhost:5000${resumeUrl}`;
+        fullUrl = `https://job-portal-3jkf.onrender.com${resumeUrl}`;
       }
 
       console.log('Full URL:', fullUrl);
