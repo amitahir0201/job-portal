@@ -21,7 +21,7 @@ const MyJobs = () => {
         setJobs(res.data.jobs || []);
         setStats({
           total: res.data.count,
-          applications: 0, // Can be calculated if needed
+          applications: 0, 
         });
       } catch (err) {
         setError(err.response?.data?.message || 'Failed to load jobs');
@@ -46,129 +46,116 @@ const MyJobs = () => {
 
   return (
     <RecruiterLayout>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-8 px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="max-w-6xl mx-auto mb-8">
-          <div className="flex items-center justify-between mb-6">
-            <div>
-              <h1 className="text-4xl font-bold text-gray-900">My Jobs</h1>
-              <p className="text-gray-600 mt-2">Manage your job postings</p>
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-4 sm:py-8 px-3 sm:px-6 lg:px-8">
+        
+        {/* Header Section */}
+        <div className="max-w-6xl mx-auto mb-6 sm:mb-8">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 break-words">My Jobs</h1>
+              <p className="text-sm sm:text-base text-gray-600 mt-1">Manage your job postings</p>
             </div>
             <button
               onClick={() => navigate('/post-job')}
-              className="px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all shadow-lg hover:shadow-xl"
+              className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg font-semibold transition-all shadow-md active:scale-95 text-center"
             >
               + Post a Job
             </button>
           </div>
 
-          {/* Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-white rounded-xl shadow-md border border-green-200 p-6">
-              <p className="text-sm text-gray-600 font-medium">Total Jobs Posted</p>
-              <p className="text-3xl font-bold text-green-600 mt-2">{stats.total}</p>
+          {/* Stats Bar */}
+          <div className="grid grid-cols-2 gap-3 sm:gap-6">
+            <div className="bg-white rounded-xl shadow-md border border-green-200 p-4 sm:p-6">
+              <p className="text-[10px] sm:text-sm text-gray-600 font-medium uppercase tracking-wider">Total Jobs</p>
+              <p className="text-xl sm:text-3xl font-bold text-green-600 mt-1">{stats.total}</p>
             </div>
-            <div className="bg-white rounded-xl shadow-md border border-green-200 p-6">
-              <p className="text-sm text-gray-600 font-medium">Status</p>
-              <p className="text-3xl font-bold text-emerald-600 mt-2">
-                {jobs.filter((j) => j.status === 'Active').length} Active
+            <div className="bg-white rounded-xl shadow-md border border-green-200 p-4 sm:p-6">
+              <p className="text-[10px] sm:text-sm text-gray-600 font-medium uppercase tracking-wider">Active</p>
+              <p className="text-xl sm:text-3xl font-bold text-emerald-600 mt-1">
+                {jobs.filter((j) => j.status === 'Active').length}
               </p>
             </div>
           </div>
         </div>
 
-        {/* Content */}
+        {/* Content Section */}
         <div className="max-w-6xl mx-auto">
           {loading ? (
             <div className="text-center py-20">
               <div className="inline-block">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600"></div>
-                <p className="text-gray-600 mt-4">Loading jobs...</p>
+                <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-green-600"></div>
+                <p className="text-gray-600 mt-4 text-sm font-medium">Loading jobs...</p>
               </div>
             </div>
           ) : error ? (
-            <div className="p-6 bg-red-50 border border-red-200 text-red-700 rounded-xl">
+            <div className="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm break-words">
               {error}
             </div>
           ) : jobs.length === 0 ? (
             <div className="p-8 bg-yellow-50 border border-yellow-200 rounded-xl text-center">
-              <p className="text-yellow-800 font-medium">
+              <p className="text-yellow-800 font-medium text-sm">
                 No job postings yet. Click "Post a Job" to create one.
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {jobs.map((job) => (
                 <div
                   key={job._id}
-                  className="bg-white rounded-xl shadow-md border border-green-100 overflow-hidden hover:shadow-lg transition-all hover:border-green-300"
+                  className="bg-white rounded-xl shadow-md border border-green-100 overflow-hidden flex flex-col hover:shadow-lg transition-all"
                 >
                   {/* Card Header */}
-                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-5 border-b border-green-100">
-                    <div className="flex justify-between items-start gap-4">
-                      <div className="flex-1">
-                        <h3 className="text-xl font-bold text-gray-900">{job.title}</h3>
-                        <p className="text-sm text-gray-600 mt-1">
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 sm:p-5 border-b border-green-100">
+                    <div className="flex justify-between items-start gap-3">
+                      <div className="min-w-0 flex-1">
+                        <h3 className="text-lg sm:text-xl font-bold text-gray-900 break-words leading-tight">
+                          {job.title}
+                        </h3>
+                        <p className="text-xs sm:text-sm text-gray-600 mt-1 break-all">
                           {job.company || 'Your Company'} • {job.location}
                         </p>
                       </div>
-                      <div className="text-right">
-                        <span
-                          className={`inline-block px-3 py-1 rounded-full text-xs font-bold ${
-                            job.status === 'Active'
-                              ? 'bg-green-100 text-green-700'
-                              : 'bg-yellow-100 text-yellow-700'
-                          }`}
-                        >
-                          {job.status}
-                        </span>
-                      </div>
+                      <span
+                        className={`shrink-0 px-2 py-1 rounded-full text-[10px] sm:text-xs font-bold whitespace-nowrap ${
+                          job.status === 'Active'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-yellow-100 text-yellow-700'
+                        }`}
+                      >
+                        {job.status}
+                      </span>
                     </div>
                   </div>
 
                   {/* Card Body */}
-                  <div className="p-5 space-y-4">
-                    {/* Description */}
-                    <div>
-                      <p className="text-sm text-gray-700 line-clamp-3">{job.description}</p>
-                    </div>
+                  <div className="p-4 sm:p-5 space-y-4 flex-1">
+                    <p className="text-xs sm:text-sm text-gray-700 line-clamp-3 break-words leading-relaxed">
+                      {job.description}
+                    </p>
 
-                    {/* Details Grid */}
-                    <div className="grid grid-cols-2 gap-3">
-                      {/* Job Type */}
-                      <div className="bg-green-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-600 font-medium">Job Type</p>
-                        <p className="text-sm font-semibold text-gray-900 mt-1">
+                    {/* Details Grid - Wraps on very small screens */}
+                    <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
+                      <div className="bg-green-50/50 rounded-lg p-3 border border-green-100 min-w-0">
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Type</p>
+                        <p className="text-xs sm:text-sm font-semibold text-gray-900 mt-1 break-words">
                           {job.jobType || 'Full-Time'}
                         </p>
                       </div>
 
-                      {/* Experience Level */}
-                      <div className="bg-green-50 rounded-lg p-3">
-                        <p className="text-xs text-gray-600 font-medium">Experience</p>
-                        <p className="text-sm font-semibold text-gray-900 mt-1">
+                      <div className="bg-green-50/50 rounded-lg p-3 border border-green-100 min-w-0">
+                        <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Experience</p>
+                        <p className="text-xs sm:text-sm font-semibold text-gray-900 mt-1 break-words">
                           {job.experienceLevel || 'Mid'}
                         </p>
                       </div>
 
-                      {/* Salary */}
                       {(job.salaryMin || job.salaryMax) && (
-                        <div className="bg-green-50 rounded-lg p-3">
-                          <p className="text-xs text-gray-600 font-medium">Salary Range</p>
-                          <p className="text-sm font-semibold text-gray-900 mt-1">
+                        <div className="bg-green-50/50 rounded-lg p-3 border border-green-100 xs:col-span-2 min-w-0">
+                          <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wide">Salary Range</p>
+                          <p className="text-xs sm:text-sm font-semibold text-gray-900 mt-1 break-all">
                             {job.salaryMin && `${job.currency} ${job.salaryMin}`}
                             {job.salaryMin && job.salaryMax && ' - '}
                             {job.salaryMax && `${job.currency} ${job.salaryMax}`}
-                          </p>
-                        </div>
-                      )}
-
-                      {/* Deadline */}
-                      {job.applicationDeadline && (
-                        <div className="bg-green-50 rounded-lg p-3">
-                          <p className="text-xs text-gray-600 font-medium">Deadline</p>
-                          <p className="text-sm font-semibold text-gray-900 mt-1">
-                            {new Date(job.applicationDeadline).toLocaleDateString()}
                           </p>
                         </div>
                       )}
@@ -176,53 +163,43 @@ const MyJobs = () => {
 
                     {/* Skills */}
                     {job.requiredSkills && job.requiredSkills.length > 0 && (
-                      <div>
-                        <p className="text-xs text-gray-600 font-medium mb-2">Required Skills</p>
-                        <div className="flex flex-wrap gap-2">
+                      <div className="min-w-0">
+                        <p className="text-[10px] text-gray-500 font-bold uppercase mb-2">Required Skills</p>
+                        <div className="flex flex-wrap gap-1.5">
                           {job.requiredSkills.slice(0, 4).map((skill) => (
                             <span
                               key={skill}
-                              className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold"
+                              className="px-2 py-1 bg-green-100 text-green-700 rounded text-[10px] sm:text-xs font-semibold break-all"
                             >
                               {skill}
                             </span>
                           ))}
-                          {job.requiredSkills.length > 4 && (
-                            <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
-                              +{job.requiredSkills.length - 4}
-                            </span>
-                          )}
                         </div>
                       </div>
                     )}
 
-                    {/* Posted Date */}
-                    <p className="text-xs text-gray-500">
-                      Posted on {new Date(job.createdAt).toLocaleDateString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
+                    <p className="text-[10px] text-gray-400 pt-2 border-t border-gray-50">
+                      Posted: {new Date(job.createdAt).toLocaleDateString()}
                     </p>
                   </div>
 
-                  {/* Card Footer - Actions */}
-                  <div className="px-5 py-4 bg-gray-50 border-t border-green-100 flex gap-2">
+                  {/* Card Footer - Responsive Buttons */}
+                  <div className="px-4 py-3 bg-gray-50 border-t border-green-100 flex flex-col sm:flex-row gap-2">
                     <button
                       onClick={() => navigate(`/recruiter/job-details/${job._id}`)}
-                      className="flex-1 px-3 py-2 text-sm border border-green-300 text-green-600 rounded-lg hover:bg-green-50 transition-colors font-medium"
+                      className="w-full sm:flex-1 px-3 py-2 text-xs sm:text-sm border border-green-300 text-green-600 rounded-lg hover:bg-green-50 transition-colors font-bold uppercase"
                     >
-                      View Details
+                      Details
                     </button>
                     <button
                       onClick={() => navigate(`/applicants/${job._id}`)}
-                      className="flex-1 px-3 py-2 text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                      className="w-full sm:flex-1 px-3 py-2 text-xs sm:text-sm bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-bold uppercase"
                     >
                       Applicants
                     </button>
                     <button
                       onClick={() => handleDelete(job._id)}
-                      className="px-3 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+                      className="w-full sm:w-auto px-4 py-2 text-xs sm:text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-bold uppercase"
                     >
                       Delete
                     </button>

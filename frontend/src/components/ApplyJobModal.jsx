@@ -149,7 +149,7 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-gray-900 bg-opacity-40 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
+    <div className="fixed inset-0 bg-gray-900 bg-opacity-40 z-50 flex items-center justify-center p-2 xs:p-3 sm:p-4 backdrop-blur-sm">
       <style>{`
         .modal-scrollbar::-webkit-scrollbar {
           width: 8px;
@@ -167,16 +167,16 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
       `}</style>
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto modal-scrollbar">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-6 flex items-center justify-between">
-          <div>
-            <h2 className="text-2xl font-bold">Apply for {job?.title}</h2>
-            <p className="text-emerald-100 text-sm mt-1">{job?.companyName}</p>
+        <div className="sticky top-0 bg-gradient-to-r from-emerald-600 to-emerald-700 text-white p-3 xs:p-4 sm:p-6 flex items-start xs:items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-lg xs:text-xl sm:text-2xl font-bold break-words">{job?.title ? `Apply for ${job.title}` : 'Apply for Job'}</h2>
+            <p className="text-emerald-100 text-xs xs:text-sm mt-1">{job?.companyName}</p>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition"
+            className="flex-shrink-0 p-2 hover:bg-white hover:bg-opacity-20 rounded-lg transition"
           >
-            <X size={24} />
+            <X size={20} className="xs:w-6 xs:h-6" />
           </button>
         </div>
 
@@ -186,11 +186,11 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
             <p className="text-gray-600">Loading your profile...</p>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-3 xs:p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* Demo Data Notice */}
             {useDummy && (
-              <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-blue-700 text-sm font-medium">
+              <div className="p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-blue-700 text-xs sm:text-sm font-medium">
                   📌 Using demo data. Connect to backend API for real user profile.
                 </p>
               </div>
@@ -198,25 +198,25 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
 
             {/* Submit Error */}
             {errors.submit && (
-              <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-700 text-sm font-medium">{errors.submit}</p>
+              <div className="p-3 sm:p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-700 text-xs sm:text-sm font-medium">{errors.submit}</p>
               </div>
             )}
 
             {/* Personal Information */}
-            <div className="space-y-4">
-              <h3 className="font-bold text-gray-900">Personal Information</h3>
+            <div className="space-y-3 sm:space-y-4">
+              <h3 className="font-bold text-base xs:text-lg text-gray-900">Personal Information</h3>
 
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-2">
+                  <label className="block text-xs sm:text-sm font-bold text-gray-900 mb-2">
                     Full Name <span className="text-red-600">*</span>
                   </label>
                   <input
                     type="text"
                     value={formData.fullName}
                     onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                    className={`w-full px-4 py-2.5 border rounded-lg focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none transition ${
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none transition text-sm ${
                       errors.fullName ? 'border-red-300' : 'border-gray-200'
                     }`}
                     placeholder="Your full name"
@@ -225,14 +225,14 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-gray-900 mb-2">
+                  <label className="block text-xs sm:text-sm font-bold text-gray-900 mb-2">
                     Email <span className="text-red-600">*</span>
                   </label>
                   <input
                     type="email"
                     value={formData.email}
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                    className={`w-full px-4 py-2.5 border rounded-lg focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none transition ${
+                    className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none transition text-sm ${
                       errors.email ? 'border-red-300' : 'border-gray-200'
                     }`}
                     placeholder="your.email@example.com"
@@ -242,14 +242,14 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
               </div>
 
               <div>
-                <label className="block text-sm font-bold text-gray-900 mb-2">
+                <label className="block text-xs sm:text-sm font-bold text-gray-900 mb-2">
                   Phone <span className="text-red-600">*</span>
                 </label>
                 <input
                   type="tel"
                   value={formData.phone}
                   onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                  className={`w-full px-4 py-2.5 border rounded-lg focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none transition ${
+                  className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none transition text-sm ${
                     errors.phone ? 'border-red-300' : 'border-gray-200'
                   }`}
                   placeholder="+1 (555) 123-4567"
@@ -260,14 +260,14 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
 
             {/* Resume */}
             <div className="space-y-2">
-              <label className="block text-sm font-bold text-gray-900">
+              <label className="block text-xs sm:text-sm font-bold text-gray-900">
                 Resume URL <span className="text-red-600">*</span>
               </label>
               <input
                 type="url"
                 value={formData.resume}
                 onChange={(e) => setFormData({ ...formData, resume: e.target.value })}
-                className={`w-full px-4 py-2.5 border rounded-lg focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none transition ${
+                className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none transition text-sm ${
                   errors.resume ? 'border-red-300' : 'border-gray-200'
                 }`}
                 placeholder="https://s3.amazonaws.com/your-resume.pdf"
@@ -277,14 +277,14 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
 
             {/* Cover Letter */}
             <div className="space-y-2">
-              <label className="block text-sm font-bold text-gray-900">
+              <label className="block text-xs sm:text-sm font-bold text-gray-900">
                 Cover Letter (Optional)
               </label>
               <textarea
                 value={formData.coverLetter}
                 onChange={(e) => setFormData({ ...formData, coverLetter: e.target.value })}
-                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none transition resize-none"
-                rows="4"
+                className="w-full px-3 sm:px-4 py-2 sm:py-2.5 border border-gray-200 rounded-lg focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none transition resize-none text-sm"
+                rows="3"
                 placeholder="Tell the recruiter why you're interested in this role..."
               />
             </div>

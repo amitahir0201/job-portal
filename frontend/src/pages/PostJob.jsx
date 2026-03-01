@@ -19,6 +19,7 @@ import SectionCard from '../components/PostJob/SectionCard';
 import SkillsInput from '../components/PostJob/SkillsInput';
 import CustomQuestionBuilder from '../components/PostJob/CustomQuestionBuilder';
 import RequiredLinksToggle from '../components/PostJob/RequiredLinksToggle';
+import DateInputField from '../components/PostJob/DateInputField';
 import api from '../services/api';
 
 const PostJob = () => {
@@ -61,9 +62,16 @@ const PostJob = () => {
     }
 
     if (formData.applicationDeadline) {
-      const deadline = new Date(formData.applicationDeadline);
-      if (deadline < new Date()) {
-        newErrors.applicationDeadline = 'Deadline cannot be in the past';
+      try {
+        const deadline = new Date(formData.applicationDeadline + 'T00:00:00Z');
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (deadline < today) {
+          newErrors.applicationDeadline = 'Deadline cannot be in the past';
+        }
+      } catch (err) {
+        newErrors.applicationDeadline = 'Invalid date format. Please use MM-DD-YYYY format';
       }
     }
 
@@ -240,50 +248,50 @@ const PostJob = () => {
 
   return (
     <RecruiterLayout>
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-6 sm:py-8 px-3 sm:px-4 md:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-50 py-4 sm:py-6 md:py-8 px-2 xs:px-3 sm:px-4 md:px-6 lg:px-8">
         {/* Toast Notification */}
         {toast && (
           <div
-            className={`fixed top-3 sm:top-4 right-3 sm:right-4 p-3 sm:p-4 rounded-xl shadow-xl flex items-center gap-2 z-50 animate-in fade-in slide-in-from-top text-sm sm:text-base ${
+            className={`fixed top-2 right-2 sm:top-4 sm:right-4 p-2.5 sm:p-4 rounded-lg sm:rounded-xl shadow-lg sm:shadow-xl flex items-center gap-2 z-50 animate-in fade-in slide-in-from-top text-xs sm:text-sm md:text-base max-w-xs sm:max-w-sm ${
               toast.type === 'success'
                 ? 'bg-green-600 text-white border border-green-700'
                 : 'bg-red-600 text-white border border-red-700'
             }`}
           >
             {toast.type === 'success' ? (
-              <CheckCircle size={20} />
+              <CheckCircle size={16} className="sm:w-5 sm:h-5 md:w-6 md:h-6 flex-shrink-0" />
             ) : (
-              <AlertCircle size={20} />
+              <AlertCircle size={16} className="sm:w-5 sm:h-5 md:w-6 md:h-6 flex-shrink-0" />
             )}
-            {toast.message}
+            <span className="line-clamp-2">{toast.message}</span>
           </div>
         )}
 
-        <div className="max-w-5xl mx-auto">
+        <div className="w-full max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+          <div className="mb-4 sm:mb-6 md:mb-8 px-1 sm:px-2">
+            <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-1 sm:mb-2">
               Post a New Job
             </h1>
-            <p className="text-sm sm:text-base text-gray-600">
+            <p className="text-xs sm:text-sm md:text-base text-gray-600">
               Fill in the details below to create and publish a job posting
             </p>
           </div>
 
           {/* Main Form */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 pb-32">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 md:gap-4 lg:gap-6 pb-24 sm:pb-28 md:pb-32">
             {/* Left Column */}
-            <div className="lg:col-span-2 space-y-4 sm:space-y-6">
+            <div className="lg:col-span-2 space-y-3 md:space-y-4 lg:space-y-6">
               {/* Basic Information */}
               <SectionCard
                 title="Basic Information"
-                icon={<Briefcase size={20} />}
+                icon={<Briefcase size={18} className="sm:w-5 sm:h-5" />}
                 description="Essential job details"
               >
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {/* Job Title */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2">
                       Job Title *
                     </label>
                     <input
@@ -293,7 +301,7 @@ const PostJob = () => {
                       onChange={handleInputChange}
                       onBlur={handleBlur}
                       placeholder="e.g., Senior React Developer"
-                      className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white ${
+                      className={`w-full px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-3 text-xs sm:text-sm md:text-base border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white ${
                         errors.title && touched.title
                           ? 'border-red-500 bg-red-50'
                           : 'border-green-300 hover:border-green-400'
@@ -301,18 +309,18 @@ const PostJob = () => {
                     />
                     {errors.title && touched.title && (
                       <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                        <AlertCircle size={14} /> {errors.title}
+                        <AlertCircle size={12} className="sm:w-4 sm:h-4" /> {errors.title}
                       </p>
                     )}
                   </div>
 
                   {/* Location */}
                   <div>
-                    <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
+                    <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2">
                       Location *
                     </label>
-                    <div className="flex items-center gap-2">
-                      <MapPin size={18} className="text-green-600 flex-shrink-0" />
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <MapPin size={16} className="text-green-600 flex-shrink-0 sm:w-4.5 sm:h-4.5 md:w-5 md:h-5" />
                       <input
                         type="text"
                         name="location"
@@ -320,7 +328,7 @@ const PostJob = () => {
                         onChange={handleInputChange}
                         onBlur={handleBlur}
                         placeholder="e.g., San Francisco, CA"
-                        className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white ${
+                        className={`flex-1 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-3 text-xs sm:text-sm md:text-base border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white ${
                           errors.location && touched.location
                             ? 'border-red-500 bg-red-50'
                             : 'border-green-300 hover:border-green-400'
@@ -329,22 +337,22 @@ const PostJob = () => {
                     </div>
                     {errors.location && touched.location && (
                       <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                        <AlertCircle size={14} /> {errors.location}
+                        <AlertCircle size={12} className="sm:w-4 sm:h-4" /> {errors.location}
                       </p>
                     )}
                   </div>
 
                   {/* Job Type & Experience Level */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                     <div>
-                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2">
                         Job Type
                       </label>
                       <select
                         name="jobType"
                         value={formData.jobType}
                         onChange={handleInputChange}
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium"
+                        className="w-full px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-3 text-xs sm:text-sm md:text-base border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium"
                       >
                         <option>Full-Time</option>
                         <option>Part-Time</option>
@@ -355,14 +363,14 @@ const PostJob = () => {
                     </div>
 
                     <div>
-                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
-                        Experience Level
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2">
+                        Experience
                       </label>
                       <select
                         name="experienceLevel"
                         value={formData.experienceLevel}
                         onChange={handleInputChange}
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium"
+                        className="w-full px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-3 text-xs sm:text-sm md:text-base border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium"
                       >
                         <option>Entry</option>
                         <option>Mid</option>
@@ -377,14 +385,14 @@ const PostJob = () => {
               {/* Salary Information */}
               <SectionCard
                 title="Salary Information"
-                icon={<DollarSign size={20} />}
+                icon={<DollarSign size={18} className="sm:w-5 sm:h-5" />}
                 description="Optional - Leave blank if not disclosing"
               >
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div className="space-y-3 md:space-y-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
                     <div>
-                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
-                        Minimum Salary
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2">
+                        Min Salary
                       </label>
                       <input
                         type="number"
@@ -392,13 +400,13 @@ const PostJob = () => {
                         value={formData.salaryMin}
                         onChange={handleInputChange}
                         placeholder="50000"
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white"
+                        className="w-full px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-3 text-xs sm:text-sm md:text-base border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
-                        Maximum Salary
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2">
+                        Max Salary
                       </label>
                       <input
                         type="number"
@@ -406,19 +414,19 @@ const PostJob = () => {
                         value={formData.salaryMax}
                         onChange={handleInputChange}
                         placeholder="100000"
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white"
+                        className="w-full px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-3 text-xs sm:text-sm md:text-base border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white"
                       />
                     </div>
 
                     <div>
-                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
+                      <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2">
                         Currency
                       </label>
                       <select
                         name="currency"
                         value={formData.currency}
                         onChange={handleInputChange}
-                        className="w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium"
+                        className="w-full px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-3 text-xs sm:text-sm md:text-base border-2 border-green-300 hover:border-green-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium"
                       >
                         <option>USD</option>
                         <option>EUR</option>
@@ -428,8 +436,8 @@ const PostJob = () => {
                     </div>
                   </div>
                   {errors.salary && touched.salaryMin && (
-                    <p className="text-red-500 text-sm flex items-center gap-1">
-                      <AlertCircle size={14} /> {errors.salary}
+                    <p className="text-red-500 text-xs sm:text-sm flex items-center gap-1">
+                      <AlertCircle size={12} className="sm:w-4 sm:h-4" /> {errors.salary}
                     </p>
                   )}
                 </div>
@@ -438,11 +446,11 @@ const PostJob = () => {
               {/* Job Description */}
               <SectionCard
                 title="Job Description"
-                icon={<Code size={20} />}
+                icon={<Code size={18} className="sm:w-5 sm:h-5" />}
                 description="Provide detailed information about the role"
               >
                 <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
+                  <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-1.5 sm:mb-2">
                     Description *
                   </label>
                   <textarea
@@ -451,23 +459,23 @@ const PostJob = () => {
                     onChange={handleInputChange}
                     onBlur={handleBlur}
                     placeholder="Describe the job role, responsibilities, and what you're looking for..."
-                    rows="8"
-                    className={`w-full px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all resize-none font-medium bg-white ${
+                    rows="5"
+                    className={`w-full px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 md:py-3 text-xs sm:text-sm md:text-base border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all resize-none font-medium bg-white md:rows-8 ${
                       errors.description && touched.description
                         ? 'border-red-500 bg-red-50'
                         : 'border-green-300 hover:border-green-400'
                     }`}
                   />
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-2 gap-2">
+                  <div className="flex flex-col xs:flex-row justify-between items-start xs:items-center mt-1.5 sm:mt-2 gap-1.5 sm:gap-2">
                     <div>
                       {errors.description && touched.description && (
                         <p className="text-red-500 text-xs sm:text-sm flex items-center gap-1">
-                          <AlertCircle size={14} /> {errors.description}
+                          <AlertCircle size={12} className="sm:w-4 sm:h-4" /> {errors.description}
                         </p>
                       )}
                     </div>
                     <p className="text-xs sm:text-sm text-gray-500 whitespace-nowrap">
-                      {formData.description.length} / 5000 characters
+                      {formData.description.length} / 5000
                     </p>
                   </div>
                 </div>
@@ -476,7 +484,7 @@ const PostJob = () => {
               {/* Required Skills */}
               <SectionCard
                 title="Required Skills"
-                icon={<Code size={20} />}
+                icon={<Code size={18} className="sm:w-5 sm:h-5" />}
                 description="Add skills required for this position"
               >
                 <SkillsInput
@@ -489,41 +497,27 @@ const PostJob = () => {
               {/* Application Deadline */}
               <SectionCard
                 title="Application Deadline"
-                icon={<Calendar size={20} />}
+                icon={<Calendar size={18} className="sm:w-5 sm:h-5" />}
                 description="When should applications close?"
               >
-                <div>
-                  <label className="block text-xs sm:text-sm font-semibold text-gray-900 mb-2">
-                    Deadline (Optional)
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <Calendar size={18} className="text-green-600 flex-shrink-0" />
-                    <input
-                      type="date"
-                      name="applicationDeadline"
-                      value={formData.applicationDeadline}
-                      onChange={handleInputChange}
-                      onBlur={handleBlur}
-                      min={new Date().toISOString().split('T')[0]}
-                      className={`flex-1 px-3 sm:px-4 py-2 sm:py-3 text-sm border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-green-600 transition-all bg-white font-medium ${
-                        errors.applicationDeadline && touched.applicationDeadline
-                          ? 'border-red-500 bg-red-50'
-                          : 'border-green-300 hover:border-green-400'
-                      }`}
-                    />
-                  </div>
-                  {errors.applicationDeadline && touched.applicationDeadline && (
-                    <p className="text-red-500 text-xs mt-1 flex items-center gap-1">
-                      <AlertCircle size={14} /> {errors.applicationDeadline}
-                    </p>
-                  )}
-                </div>
+                <DateInputField
+                  name="applicationDeadline"
+                  label="Deadline (Optional)"
+                  value={formData.applicationDeadline}
+                  onChange={handleInputChange}
+                  onBlur={handleBlur}
+                  error={errors.applicationDeadline}
+                  touched={touched.applicationDeadline}
+                  minDate={new Date().toISOString().split('T')[0]}
+                  showIcon={true}
+                  description="You can accept both MM-DD-YYYY and MM/DD/YYYY formats. On mobile, you can also type manually with auto-formatting."
+                />
               </SectionCard>
 
               {/* Required Links */}
               <SectionCard
                 title="Required Links"
-                icon={<Link2 size={20} />}
+                icon={<Link2 size={18} className="sm:w-5 sm:h-5" />}
                 description="Which documents should applicants provide?"
               >
                 <RequiredLinksToggle
@@ -535,10 +529,10 @@ const PostJob = () => {
               {/* Custom Questions */}
               <SectionCard
                 title="Custom Questions"
-                icon={<Clock size={20} />}
+                icon={<Clock size={18} className="sm:w-5 sm:h-5" />}
                 description="Add screening questions for applicants"
               >
-                <div className="space-y-4">
+                <div className="space-y-2 sm:space-y-3 md:space-y-4">
                   {formData.customQuestions.map((question, index) => (
                     <CustomQuestionBuilder
                       key={index}
@@ -554,9 +548,9 @@ const PostJob = () => {
                   <button
                     onClick={handleAddQuestion}
                     type="button"
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 border-2 border-dashed border-green-400 rounded-lg text-green-600 hover:bg-green-50 transition-colors font-semibold"
+                    className="w-full flex items-center justify-center gap-2 py-2 sm:py-3 px-3 sm:px-4 border-2 border-dashed border-green-400 rounded-lg text-xs sm:text-sm md:text-base text-green-600 hover:bg-green-50 transition-colors font-semibold"
                   >
-                    <Plus size={18} />
+                    <Plus size={16} className="sm:w-5 sm:h-5" />
                     Add Question
                   </button>
                 </div>
@@ -565,11 +559,11 @@ const PostJob = () => {
               {/* Job Status */}
               <SectionCard
                 title="Job Status"
-                icon={<Briefcase size={20} />}
+                icon={<Briefcase size={18} className="sm:w-5 sm:h-5" />}
                 description="Save as draft or publish immediately"
               >
-                <div className="space-y-3">
-                  <label className="flex items-center gap-3 cursor-pointer p-3 border border-green-300 rounded-lg hover:bg-green-50 transition-colors">
+                <div className="space-y-2 sm:space-y-3 md:space-y-3">
+                  <label className="flex items-center gap-2 sm:gap-3 cursor-pointer p-2 sm:p-3 border-2 border-green-300 rounded-lg hover:bg-green-50 transition-colors">
                     <input
                       type="radio"
                       name="status"
@@ -579,14 +573,14 @@ const PostJob = () => {
                       className="w-4 h-4 text-green-600 accent-green-600"
                     />
                     <div>
-                      <p className="font-medium text-gray-900">Save as Draft</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="font-medium text-xs sm:text-sm md:text-base text-gray-900">Save as Draft</p>
+                      <p className="text-xs sm:text-sm text-gray-600">
                         You can publish this job later
                       </p>
                     </div>
                   </label>
 
-                  <label className="flex items-center gap-3 cursor-pointer p-3 border border-green-300 rounded-lg hover:bg-green-50 transition-colors">
+                  <label className="flex items-center gap-2 sm:gap-3 cursor-pointer p-2 sm:p-3 border-2 border-green-300 rounded-lg hover:bg-green-50 transition-colors">
                     <input
                       type="radio"
                       name="status"
@@ -596,8 +590,8 @@ const PostJob = () => {
                       className="w-4 h-4 text-green-600 accent-green-600"
                     />
                     <div>
-                      <p className="font-medium text-gray-900">Publish Now</p>
-                      <p className="text-sm text-gray-600">
+                      <p className="font-medium text-xs sm:text-sm md:text-base text-gray-900">Publish Now</p>
+                      <p className="text-xs sm:text-sm text-gray-600">
                         Job will be visible to job seekers immediately
                       </p>
                     </div>
@@ -607,13 +601,13 @@ const PostJob = () => {
             </div>
 
             {/* Right Column - Summary */}
-            <div className="lg:col-span-1 lg:sticky lg:top-8 h-fit">
-              <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border border-green-200">
-                <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-3 sm:mb-4">
+            <div className="lg:col-span-1 lg:sticky lg:top-4 h-fit">
+              <div className="bg-white rounded-lg sm:rounded-xl shadow-md lg:shadow-lg p-3 sm:p-4 md:p-6 border-2 lg:border border-green-200">
+                <h3 className="text-sm sm:text-base md:text-lg font-semibold text-gray-900 mb-2 sm:mb-3 md:mb-4">
                   Job Summary
                 </h3>
 
-                <div className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
+                <div className="space-y-1.5 sm:space-y-2 md:space-y-3 text-xs sm:text-sm">
                   {formData.title && (
                     <div>
                       <p className="text-green-600 font-semibold text-xs">Title</p>
@@ -626,7 +620,7 @@ const PostJob = () => {
                   {formData.location && (
                     <div>
                       <p className="text-green-600 font-semibold text-xs">Location</p>
-                      <p className="font-medium text-gray-900 text-xs sm:text-sm">
+                      <p className="font-medium text-gray-900 text-xs sm:text-sm line-clamp-2">
                         {formData.location}
                       </p>
                     </div>
@@ -638,7 +632,7 @@ const PostJob = () => {
                   </div>
 
                   <div>
-                    <p className="text-green-600 font-semibold text-xs">Experience Level</p>
+                    <p className="text-green-600 font-semibold text-xs">Experience</p>
                     <p className="font-medium text-gray-900 text-xs sm:text-sm">
                       {formData.experienceLevel}
                     </p>
@@ -646,7 +640,7 @@ const PostJob = () => {
 
                   {(formData.salaryMin || formData.salaryMax) && (
                     <div>
-                      <p className="text-green-600 font-semibold text-xs">Salary Range</p>
+                      <p className="text-green-600 font-semibold text-xs">Salary</p>
                       <p className="font-medium text-gray-900 text-xs sm:text-sm">
                         {formData.salaryMin && `${formData.currency} ${formData.salaryMin}`}
                         {formData.salaryMin && formData.salaryMax && ' - '}
@@ -658,18 +652,18 @@ const PostJob = () => {
                   {formData.requiredSkills.length > 0 && (
                     <div>
                       <p className="text-green-600 font-semibold text-xs">Skills</p>
-                      <div className="flex flex-wrap gap-1 sm:gap-2 mt-1 sm:mt-2">
-                        {formData.requiredSkills.slice(0, 3).map((skill) => (
+                      <div className="flex flex-wrap gap-0.5 sm:gap-1 md:gap-2 mt-0.5 sm:mt-1 md:mt-2">
+                        {formData.requiredSkills.slice(0, 2).map((skill) => (
                           <span
                             key={skill}
-                            className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold"
+                            className="px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold"
                           >
                             {skill}
                           </span>
                         ))}
-                        {formData.requiredSkills.length > 3 && (
-                          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
-                            +{formData.requiredSkills.length - 3}
+                        {formData.requiredSkills.length > 2 && (
+                          <span className="px-1.5 sm:px-2 md:px-3 py-0.5 sm:py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold">
+                            +{formData.requiredSkills.length - 2}
                           </span>
                         )}
                       </div>
@@ -680,15 +674,18 @@ const PostJob = () => {
                     <div>
                       <p className="text-green-600 font-semibold text-xs">Deadline</p>
                       <p className="font-medium text-gray-900 text-xs sm:text-sm">
-                        {new Date(formData.applicationDeadline).toLocaleDateString()}
+                        {formData.applicationDeadline && (() => {
+                          const [year, month, day] = formData.applicationDeadline.split('-');
+                          return `${month}-${day}-${year}`;
+                        })()}
                       </p>
                     </div>
                   )}
 
-                  <div className="pt-2 sm:pt-4 border-t border-green-200">
-                    <p className="text-green-600 font-semibold mb-1 sm:mb-2 text-xs">Status</p>
+                  <div className="pt-1.5 sm:pt-2 md:pt-4 border-t border-green-200">
+                    <p className="text-green-600 font-semibold mb-0.5 sm:mb-1 md:mb-2 text-xs">Status</p>
                     <span
-                      className={`inline-block px-3 py-1.5 rounded-full text-xs font-bold ${
+                      className={`inline-block px-2 sm:px-3 md:px-4 py-0.5 sm:py-1 md:py-1.5 rounded-full text-xs md:text-sm font-bold ${
                         formData.status === 'Active'
                           ? 'bg-green-100 text-green-700'
                           : 'bg-yellow-100 text-yellow-700'
@@ -703,24 +700,32 @@ const PostJob = () => {
           </div>
 
           {/* Sticky Action Footer */}
-          <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-green-200 shadow-2xl">
-            <div className="max-w-5xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-3 sm:py-4 flex flex-col sm:flex-row gap-2 sm:gap-3 justify-end">
+          <div className="fixed bottom-0 left-0 right-0 bg-white border-t-2 lg:border-t border-green-200 shadow-lg lg:shadow-2xl z-40">
+            <div className="w-full max-w-7xl mx-auto px-2 xs:px-3 sm:px-4 md:px-6 lg:px-8 py-2.5 sm:py-3 md:py-4 flex flex-col-reverse xs:flex-row gap-2 sm:gap-2.5 md:gap-3 justify-end">
               <button
                 onClick={handleSaveDraft}
                 disabled={loading}
-                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 border-2 border-green-300 rounded-lg text-green-700 hover:bg-green-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-sm sm:text-base"
+                className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-3 border-2 border-green-300 rounded-lg text-green-700 hover:bg-green-50 transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold text-xs sm:text-sm md:text-base"
               >
-                <Save size={18} />
-                Save Draft
+                <Save size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                <span className="hidden xs:inline">Save Draft</span>
+                <span className="xs:hidden">Draft</span>
               </button>
 
               <button
                 onClick={handlePublish}
                 disabled={loading}
-                className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl text-sm sm:text-base"
+                className="flex items-center justify-center gap-1.5 sm:gap-2 px-3 sm:px-4 md:px-6 py-1.5 sm:py-2 md:py-3 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-md hover:shadow-lg text-xs sm:text-sm md:text-base"
               >
-                <Send size={18} />
-                {loading ? 'Publishing...' : 'Publish Job'}
+                <Send size={14} className="sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                {loading ? (
+                  <span className="hidden sm:inline">Publishing...</span>
+                ) : (
+                  <>
+                    <span className="hidden xs:inline">Publish Job</span>
+                    <span className="xs:hidden">Publish</span>
+                  </>
+                )}
               </button>
             </div>
           </div>

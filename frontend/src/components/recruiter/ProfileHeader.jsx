@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { CheckCircle, AlertCircle } from 'lucide-react';
 
 const ProfileHeader = ({
@@ -10,16 +10,30 @@ const ProfileHeader = ({
   onEditClick,
   isEditing,
 }) => {
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    // Debug logging
+    console.log('ProfileHeader image prop:', image);
+    setImageError(false); // Reset error when image prop changes
+  }, [image]);
+
+  const handleImageError = () => {
+    console.error('Image failed to load:', image);
+    setImageError(true);
+  };
+
   return (
     <div className="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg shadow-lg overflow-hidden mb-6">
       <div className="px-6 py-8 md:py-10">
         <div className="flex flex-col md:flex-row items-center gap-6">
           {/* Profile Photo */}
           <div className="flex-shrink-0">
-            {image ? (
+            {image && !imageError ? (
               <img
                 src={image}
                 alt={name}
+                onError={handleImageError}
                 className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white object-cover shadow-lg"
               />
             ) : (

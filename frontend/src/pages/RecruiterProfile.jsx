@@ -5,6 +5,7 @@ import ProfileHeader from '../components/recruiter/ProfileHeader';
 import FormInput from '../components/recruiter/FormInput';
 import ImageUploader from '../components/recruiter/ImageUploader';
 import { recruiterProfileAPI } from '../services/profileAPI';
+import { getFullImageUrl } from '../utils/imageUtils';
 import { Mail, Phone, Briefcase, Linkedin, ArrowLeft, Save, X } from 'lucide-react';
 
 const RecruiterProfile = () => {
@@ -47,8 +48,11 @@ const RecruiterProfile = () => {
       setLoading(true);
       setError('');
       const response = await recruiterProfileAPI.getProfile();
+      console.log('Profile response:', response);
       if (response.success) {
         setProfile(response.data);
+        console.log('Profile data received:', response.data);
+        console.log('Profile photo from response:', response.data.profilePhoto);
         setFormData({
           fullName: response.data.fullName || '',
           email: response.data.email || '',
@@ -58,7 +62,9 @@ const RecruiterProfile = () => {
           linkedinLink: response.data.linkedinLink || '',
         });
         if (response.data.profilePhoto) {
-          setProfileImage(response.data.profilePhoto);
+          const fullUrl = getFullImageUrl(response.data.profilePhoto);
+          console.log('Full image URL:', fullUrl);
+          setProfileImage(fullUrl);
         }
       }
     } catch (err) {
@@ -132,6 +138,12 @@ const RecruiterProfile = () => {
       const response = await recruiterProfileAPI.updateProfile(form);
       if (response.success) {
         setProfile(response.data);
+        
+        // Update profile image with correct URL
+        if (response.data.profilePhoto) {
+          setProfileImage(getFullImageUrl(response.data.profilePhoto));
+        }
+        
         setIsEditing(false);
         setImageFile(null);
         alert('Profile updated successfully!');
@@ -156,7 +168,14 @@ const RecruiterProfile = () => {
         bio: profile.bio || '',
         linkedinLink: profile.linkedinLink || '',
       });
-      setProfileImage(profile.profilePhoto || null);
+      
+      // Reset profile image with correct URL
+      if (profile.profilePhoto) {
+        setProfileImage(getFullImageUrl(profile.profilePhoto));
+      } else {
+        setProfileImage(null);
+      }
+      
       setImageFile(null);
     }
   };
@@ -204,14 +223,14 @@ const RecruiterProfile = () => {
 
             {!isEditing ? (
               // View Mode
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 mb-8">
                 {/* Contact Card */}
-                <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
                   <h3 className="text-lg font-bold text-slate-900 mb-4">Contact Information</h3>
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
                       <Mail className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-1" />
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-xs text-slate-500 font-semibold uppercase">Email</p>
                         <p className="text-slate-900 break-all">{formData.email}</p>
                       </div>
@@ -219,9 +238,9 @@ const RecruiterProfile = () => {
                     {formData.phone && (
                       <div className="flex items-start gap-3">
                         <Phone className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-1" />
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <p className="text-xs text-slate-500 font-semibold uppercase">Phone</p>
-                          <p className="text-slate-900">{formData.phone}</p>
+                          <p className="text-slate-900 break-all">{formData.phone}</p>
                         </div>
                       </div>
                     )}
@@ -229,27 +248,27 @@ const RecruiterProfile = () => {
                 </div>
 
                 {/* Professional Card */}
-                <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
                   <h3 className="text-lg font-bold text-slate-900 mb-4">Professional Info</h3>
                   <div className="space-y-4">
                     <div className="flex items-start gap-3">
                       <Briefcase className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-1" />
-                      <div>
+                      <div className="min-w-0 flex-1">
                         <p className="text-xs text-slate-500 font-semibold uppercase">Designation</p>
-                        <p className="text-slate-900">{formData.designation}</p>
+                        <p className="text-slate-900 break-words">{formData.designation}</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Social Links Card */}
-                <div className="bg-white rounded-lg shadow-md p-6">
+                <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
                   <h3 className="text-lg font-bold text-slate-900 mb-4">Social Links</h3>
                   <div className="space-y-4">
                     {formData.linkedinLink ? (
                       <div className="flex items-start gap-3">
                         <Linkedin className="w-5 h-5 text-emerald-600 flex-shrink-0 mt-1" />
-                        <div>
+                        <div className="min-w-0 flex-1">
                           <p className="text-xs text-slate-500 font-semibold uppercase">LinkedIn</p>
                           <a
                             href={formData.linkedinLink}
@@ -272,15 +291,15 @@ const RecruiterProfile = () => {
             ) : null}
 
             {!isEditing && formData.bio && (
-              <div className="bg-white rounded-lg shadow-md p-6 mb-8">
+              <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-8 overflow-hidden">
                 <h3 className="text-lg font-bold text-slate-900 mb-3">Bio</h3>
-                <p className="text-slate-700 leading-relaxed">{formData.bio}</p>
+                <p className="text-slate-700 leading-relaxed break-words whitespace-pre-wrap overflow-hidden">{formData.bio}</p>
               </div>
             )}
 
             {/* Edit Form */}
             {isEditing && (
-              <div className="bg-white rounded-lg shadow-lg p-6 md:p-8 mb-8">
+              <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 md:p-8 mb-8 overflow-hidden">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6">Edit Profile</h2>
 
                 <div className="mb-6">
@@ -293,7 +312,7 @@ const RecruiterProfile = () => {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   <FormInput
                     label="Full Name"
                     name="fullName"
@@ -368,21 +387,22 @@ const RecruiterProfile = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-3 pt-4 border-t border-slate-200">
+                <div className="flex flex-col-reverse xs:flex-row gap-2 sm:gap-3 pt-4 border-t border-slate-200">
                   <button
                     onClick={handleSave}
                     disabled={saving}
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-colors"
+                    className="w-full xs:flex-1 flex items-center justify-center gap-2 px-3 sm:px-6 py-2 sm:py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-colors text-sm sm:text-base"
                   >
-                    <Save className="w-5 h-5" />
-                    {saving ? 'Saving...' : 'Save Changes'}
+                    <Save className="w-4 h-4 sm:w-5 sm:h-5" />
+                    <span className="hidden xs:inline">{saving ? 'Saving...' : 'Save Changes'}</span>
+                    <span className="xs:hidden">{saving ? 'Saving' : 'Save'}</span>
                   </button>
                   <button
                     onClick={handleCancel}
                     disabled={saving}
-                    className="flex-1 flex items-center justify-center gap-2 px-6 py-3 border-2 border-slate-300 bg-white text-slate-700 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-colors"
+                    className="w-full xs:flex-1 flex items-center justify-center gap-2 px-3 sm:px-6 py-2 sm:py-3 border-2 border-slate-300 bg-white text-slate-700 rounded-lg hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed font-semibold transition-colors text-sm sm:text-base"
                   >
-                    <X className="w-5 h-5" />
+                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
                     Cancel
                   </button>
                 </div>

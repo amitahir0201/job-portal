@@ -1,11 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Send, Paperclip, Smile, X, Loader } from 'lucide-react';
 
 const MessageInput = ({ 
   onSendMessage, 
   disabled = false,
   isLoading = false,
-  placeholder = 'Type your message...'
+  placeholder = 'Type a message...'
 }) => {
   const [message, setMessage] = useState('');
   const [attachments, setAttachments] = useState([]);
@@ -14,6 +14,15 @@ const MessageInput = ({
   const textInputRef = useRef(null);
 
   const emojis = ['😊', '👍', '❤️', '🎉', '🚀', '✨', '💪', '🙏', '😂', '😍'];
+
+  // Auto-resize textarea logic
+  useEffect(() => {
+    if (textInputRef.current) {
+      textInputRef.current.style.height = 'inherit';
+      const scrollHeight = textInputRef.current.scrollHeight;
+      textInputRef.current.style.height = `${Math.min(scrollHeight, 120)}px`;
+    }
+  }, [message]);
 
   const handleSendMessage = async () => {
     if (!message.trim() && attachments.length === 0) return;
@@ -30,7 +39,7 @@ const MessageInput = ({
   };
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if (e.key === 'Enter' && !e.shiftKey && window.innerWidth > 768) {
       e.preventDefault();
       handleSendMessage();
     }
@@ -38,10 +47,8 @@ const MessageInput = ({
 
   const handleFileSelect = (e) => {
     const files = Array.from(e.target.files || []);
-    
     files.forEach((file) => {
       const reader = new FileReader();
-      
       const isImage = file.type.startsWith('image/');
       const isVideo = file.type.startsWith('video/');
       
@@ -75,10 +82,7 @@ const MessageInput = ({
       }
     });
 
-    // Reset input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const removeAttachment = (id) => {
@@ -87,73 +91,44 @@ const MessageInput = ({
 
   const addEmoji = (emoji) => {
     setMessage((prev) => prev + emoji);
-    textInputRef.current?.focus();
+    // Keep focus on input after adding emoji for better mobile UX
+    setTimeout(() => textInputRef.current?.focus(), 0);
   };
 
   const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) return '0 B';
     const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB'];
+    const sizes = ['B', 'KB', 'MB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
   };
 
   return (
-    <div className="bg-white">
-      {/* Attachment Preview */}
+    <div className="bg-white border-t border-gray-100 p-2 sm:p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
+      {/* Attachment Preview - Horizontal Scroll for Mobile */}
       {attachments.length > 0 && (
-        <div className="px-4 pt-3 pb-2 border-b border-gray-100 space-y-2">
+        <div className="flex gap-2 overflow-x-auto pb-3 mb-2 scrollbar-hide">
           {attachments.map((attachment) => (
             <div
               key={attachment.id}
-              className="flex items-center gap-3 p-3 bg-gradient-to-r from-gray-50 to-gray-100 rounded-lg border border-gray-200 hover:border-gray-300 transition-colors"
+              className="relative flex-shrink-0 flex items-center gap-2 p-2 bg-gray-50 rounded-xl border border-gray-100 w-48 sm:w-60"
             >
-              {/* Attachment Thumbnail */}
-              {attachment.type === 'image' && (
-                <img
-                  src={attachment.url}
-                  alt={attachment.name}
-                  className="w-12 h-12 rounded object-cover border border-gray-300"
-                />
-              )}
-              {attachment.type === 'video' && (
-                <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded flex items-center justify-center text-white text-xs font-bold">
-                  VIDEO
+              {attachment.type === 'image' ? (
+                <img src={attachment.url} alt="" className="w-10 h-10 rounded-lg object-cover" />
+              ) : (
+                <div className="w-10 h-10 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600">
+                  <Paperclip size={18} />
                 </div>
               )}
-              {attachment.type === 'file' && (
-                <div className="w-12 h-12 bg-gradient-to-br from-emerald-100 to-emerald-200 rounded flex items-center justify-center">
-                  <svg
-                    className="w-6 h-6 text-emerald-600"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M8 16.5a1 1 0 01-1-1V9.707l-3.146 3.147a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0l5 5a1 1 0 01-1.414 1.414L9 9.707V15.5a1 1 0 01-1 1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-              )}
-
-              {/* File Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">
-                  {attachment.name}
-                </p>
-                <p className="text-xs text-gray-500">
-                  {formatFileSize(attachment.size)}
-                </p>
+                <p className="text-[11px] font-semibold text-gray-900 truncate">{attachment.name}</p>
+                <p className="text-[10px] text-gray-500">{formatFileSize(attachment.size)}</p>
               </div>
-
-              {/* Remove Button */}
               <button
                 onClick={() => removeAttachment(attachment.id)}
-                className="p-1.5 hover:bg-gray-300 rounded-lg transition-all flex-shrink-0"
-                title="Remove attachment"
+                className="absolute -top-1 -right-1 bg-white shadow-md rounded-full p-0.5 border border-gray-100 text-gray-400 hover:text-red-500"
               >
-                <X size={16} className="text-gray-700" />
+                <X size={14} />
               </button>
             </div>
           ))}
@@ -161,96 +136,88 @@ const MessageInput = ({
       )}
 
       {/* Input Section */}
-      <div className="p-4 space-y-3">
-        {/* Action Buttons + Text Input */}
-        <div className="flex gap-2.5 items-end">
-          {/* Attachment Button */}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={disabled || isLoading}
-            className="p-2.5 hover:bg-gray-100 text-gray-600 hover:text-gray-800 rounded-lg transition-all flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-            title="Attach file"
-            aria-label="Attach file"
-          >
-            <Paperclip size={20} />
-          </button>
-
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            onChange={handleFileSelect}
-            className="hidden"
-            accept="image/*,video/*,.pdf,.doc,.docx,.txt"
-          />
-
-          {/* Emoji Button */}
-          <div className="relative">
+      <div className="flex flex-col gap-2">
+        <div className="flex items-end gap-1 sm:gap-3">
+          {/* Action Group */}
+          <div className="flex items-center">
             <button
-              onClick={() => setShowEmojiMenu(!showEmojiMenu)}
+              onClick={() => fileInputRef.current?.click()}
               disabled={disabled || isLoading}
-              className="p-2.5 hover:bg-gray-100 text-gray-600 hover:text-gray-800 rounded-lg transition-all flex-shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
-              title="Add emoji"
-              aria-label="Add emoji"
+              className="p-2 sm:p-2.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors disabled:opacity-50"
             >
-              <Smile size={20} />
+              <Paperclip size={20} />
             </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              multiple
+              onChange={handleFileSelect}
+              className="hidden"
+              accept="image/*,video/*,.pdf,.doc,.docx,.txt"
+            />
 
-            {/* Emoji Menu */}
-            {showEmojiMenu && (
-              <div className="absolute bottom-full right-0 mb-2 p-3 bg-white rounded-xl shadow-xl border border-gray-200 grid grid-cols-5 gap-2 w-max z-50 animate-in fade-in scale-95 duration-200">
-                {emojis.map((emoji) => (
-                  <button
-                    key={emoji}
-                    onClick={() => {
-                      addEmoji(emoji);
-                      setShowEmojiMenu(false);
-                    }}
-                    className="text-2xl hover:scale-125 transition-transform cursor-pointer"
-                  >
-                    {emoji}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="relative hidden xs:block">
+              <button
+                onClick={() => setShowEmojiMenu(!showEmojiMenu)}
+                disabled={disabled || isLoading}
+                className={`p-2 sm:p-2.5 rounded-full transition-colors ${showEmojiMenu ? 'text-emerald-600 bg-emerald-50' : 'text-gray-500 hover:text-emerald-600 hover:bg-emerald-50'}`}
+              >
+                <Smile size={20} />
+              </button>
+
+              {showEmojiMenu && (
+                <div className="absolute bottom-full left-0 mb-3 p-2 bg-white rounded-2xl shadow-2xl border border-gray-100 grid grid-cols-5 gap-1 z-50 animate-in slide-in-from-bottom-2 duration-200">
+                  {emojis.map((emoji) => (
+                    <button
+                      key={emoji}
+                      onClick={() => addEmoji(emoji)}
+                      className="p-1.5 text-xl hover:bg-gray-50 rounded-lg transition-transform active:scale-125"
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Text Input */}
-          <textarea
-            ref={textInputRef}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            onKeyPress={handleKeyPress}
-            disabled={disabled || isLoading}
-            placeholder={placeholder}
-            className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent resize-none max-h-28 disabled:opacity-50 disabled:cursor-not-allowed bg-gray-50 focus:bg-white transition-all text-sm placeholder-gray-500 font-medium"
-            rows="1"
-          />
+          {/* Text Area - Mobile Friendly Expanding */}
+          <div className="flex-1 relative flex items-center">
+            <textarea
+              ref={textInputRef}
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              onKeyPress={handleKeyPress}
+              disabled={disabled || isLoading}
+              placeholder={placeholder}
+              rows="1"
+              className="w-full px-4 py-2.5 sm:py-3 bg-gray-100 focus:bg-white border-transparent focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 rounded-[22px] text-sm sm:text-base resize-none transition-all placeholder-gray-500 max-h-[120px] overflow-y-auto"
+            />
+          </div>
 
           {/* Send Button */}
           <button
             onClick={handleSendMessage}
             disabled={disabled || isLoading || (!message.trim() && attachments.length === 0)}
-            className={`p-2.5 rounded-lg transition-all flex items-center justify-center min-w-[44px] h-[44px] flex-shrink-0 ${
-              disabled || isLoading || (!message.trim() && attachments.length === 0)
-                ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
-                : 'bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white hover:shadow-lg active:scale-95'
+            className={`flex-shrink-0 w-11 h-11 sm:w-12 sm:h-12 flex items-center justify-center rounded-full shadow-sm transition-all active:scale-90 ${
+              !message.trim() && attachments.length === 0
+                ? 'bg-gray-100 text-gray-400'
+                : 'bg-emerald-600 text-white shadow-emerald-200 hover:bg-emerald-700'
             }`}
-            title="Send message (Enter)"
-            aria-label="Send message"
           >
             {isLoading ? (
               <Loader size={20} className="animate-spin" />
             ) : (
-              <Send size={20} />
+              <Send size={20} className={message.trim() ? "ml-0.5" : ""} />
             )}
           </button>
         </div>
 
-        {/* Helper Text */}
-        <p className="text-xs text-gray-500 px-2">
-          Press <kbd className="px-1.5 py-0.5 bg-gray-100 rounded border border-gray-200 text-gray-700 font-semibold">Enter</kbd> to send, <kbd className="px-1.5 py-0.5 bg-gray-100 rounded border border-gray-200 text-gray-700 font-semibold">Shift+Enter</kbd> for new line
-        </p>
+        {/* Desktop Shortcut Info */}
+        <div className="hidden sm:flex justify-between px-2 text-[10px] text-gray-400 font-medium">
+          <p>Press Enter to send, Shift+Enter for new line</p>
+          {message.length > 0 && <p>{message.length} characters</p>}
+        </div>
       </div>
     </div>
   );
