@@ -259,6 +259,15 @@ function App() {
             }
           />
 
+          <Route
+            path="/company-profile"
+            element={
+              <ProtectedRoute requiredRole="recruiter">
+                <CompanyProfile />
+              </ProtectedRoute>
+            }
+          />
+
           {/* Admin Routes */}
           <Route
             path="/admin"

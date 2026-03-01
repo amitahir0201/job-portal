@@ -32,7 +32,7 @@ const QuickActions = () => {
       icon: Settings,
       label: 'Company Profile',
       color: 'orange',
-      action: () => navigate('/profile'),
+      action: () => navigate('/company-profile'),
     },
   ];
 
