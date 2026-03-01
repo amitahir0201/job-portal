@@ -110,7 +110,7 @@ const RecruiterHeader = () => {
           <div className="flex items-center gap-2 lg:gap-4">
             {/* Notification Bell */}
             <button
-              onClick={() => navigate('/notifications')}
+              onClick={() => navigate('/recruiterNotifications')}
               className="relative p-2 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-lg transition-all duration-300"
               aria-label="Notifications"
               title="View Notifications"

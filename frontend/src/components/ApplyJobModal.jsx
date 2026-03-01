@@ -19,7 +19,7 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
     fullName: '',
     email: '',
     phone: '',
-    resume: '',
+    resumeFile: null,
     coverLetter: '',
     linkedinLink: '',
     githubLink: '',
@@ -69,7 +69,7 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
       fullName: profileData.fullName || '',
       email: profileData.email || '',
       phone: profileData.phone || '',
-      resume: profileData.resumeUrl || '',
+      resumeFile: null,
       coverLetter: '',
       linkedinLink: profileData.linkedinLink || '',
       githubLink: profileData.githubLink || '',
@@ -85,7 +85,7 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
     if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
-    if (!formData.resume.trim()) newErrors.resume = 'Resume URL is required';
+    if (!formData.resumeFile) newErrors.resumeFile = 'Resume PDF is required';
 
     // Check required links
     if (job?.requiredLinks?.linkedin?.required && !formData.linkedinLink.trim()) {
@@ -119,18 +119,27 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
 
     try {
       setSubmitting(true);
-      const res = await api.post(`/applications/apply`, {
-        jobId: job._id,
-        fullName: formData.fullName,
-        email: formData.email,
-        phone: formData.phone,
-        resumeUrl: formData.resume,
-        coverLetter: formData.coverLetter,
-        linkedinLink: formData.linkedinLink,
-        githubLink: formData.githubLink,
-        portfolioLink: formData.portfolioLink,
-        majorProjectLink: formData.majorProjectLink,
-        customAnswers: formData.customAnswers,
+      
+      // Create FormData for file upload
+      const submitData = new FormData();
+      submitData.append('jobId', job._id);
+      submitData.append('fullName', formData.fullName);
+      submitData.append('email', formData.email);
+      submitData.append('phone', formData.phone);
+      if (formData.resumeFile) {
+        submitData.append('resume', formData.resumeFile);
+      }
+      submitData.append('coverLetter', formData.coverLetter);
+      submitData.append('linkedinLink', formData.linkedinLink);
+      submitData.append('githubLink', formData.githubLink);
+      submitData.append('portfolioLink', formData.portfolioLink);
+      submitData.append('majorProjectLink', formData.majorProjectLink);
+      submitData.append('customAnswers', JSON.stringify(formData.customAnswers));
+      
+      const res = await api.post(`/applications/apply`, submitData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       });
 
       if (res.data.success) {
@@ -258,21 +267,37 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
               </div>
             </div>
 
-            {/* Resume */}
+            {/* Resume File Upload */}
             <div className="space-y-2">
               <label className="block text-xs sm:text-sm font-bold text-gray-900">
-                Resume URL <span className="text-red-600">*</span>
+                Resume (PDF) <span className="text-red-600">*</span>
               </label>
-              <input
-                type="url"
-                value={formData.resume}
-                onChange={(e) => setFormData({ ...formData, resume: e.target.value })}
-                className={`w-full px-3 sm:px-4 py-2 sm:py-2.5 border rounded-lg focus:border-emerald-300 focus:ring-2 focus:ring-emerald-100 outline-none transition text-sm ${
-                  errors.resume ? 'border-red-300' : 'border-gray-200'
-                }`}
-                placeholder="https://s3.amazonaws.com/your-resume.pdf"
-              />
-              {errors.resume && <p className="text-red-600 text-xs mt-1">{errors.resume}</p>}
+              <div className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition ${
+                errors.resumeFile ? 'border-red-300 bg-red-50' : 'border-emerald-300 bg-emerald-50 hover:border-emerald-400'
+              }`}>
+                <input
+                  type="file"
+                  accept=".pdf"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file && file.type === 'application/pdf') {
+                      setFormData({ ...formData, resumeFile: file });
+                      setErrors({ ...errors, resumeFile: null });
+                    } else if (file) {
+                      setErrors({ ...errors, resumeFile: 'Please upload a valid PDF file' });
+                    }
+                  }}
+                  className="hidden"
+                  id="resume-upload"
+                />
+                <label htmlFor="resume-upload" className="cursor-pointer block">
+                  <p className="text-sm font-semibold text-emerald-700 mb-1">
+                    {formData.resumeFile ? `✓ ${formData.resumeFile.name}` : 'Click to upload or drag and drop'}
+                  </p>
+                  <p className="text-xs text-gray-600">PDF file only (Max 5MB)</p>
+                </label>
+              </div>
+              {errors.resumeFile && <p className="text-red-600 text-xs mt-2">{errors.resumeFile}</p>}
             </div>
 
             {/* Cover Letter */}

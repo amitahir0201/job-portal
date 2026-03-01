@@ -9,6 +9,9 @@ const answerSchema = new mongoose.Schema({
 const applicationSchema = new mongoose.Schema({
   job: { type: mongoose.Schema.Types.ObjectId, ref: 'Job', required: true },
   applicant: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+  fullName: { type: String, required: true }, 
+  email: { type: String, required: true },
+  phone: { type: String },
   resumeURL: String,
   coverLetter: String,
   linkedinLink: String,

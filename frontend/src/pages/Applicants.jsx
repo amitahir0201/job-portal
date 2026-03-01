@@ -128,10 +128,10 @@ const Applicants = () => {
                   </button>
 
                   <a
-                    href={app.resumeUrl}
+                    href={app.resumeURL ? (app.resumeURL.startsWith('http') ? app.resumeURL : `http://localhost:5000${app.resumeURL}`) : '#'}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="px-3 py-1.5 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700"
+                    className={`px-3 py-1.5 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700${!app.resumeURL ? ' opacity-50 pointer-events-none' : ''}`}
                   >
                     View Resume
                   </a>

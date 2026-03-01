@@ -30,6 +30,8 @@ import SeekerProfileView from './pages/SeekerProfileView';
 import SeekerEditProfile from './pages/SeekerEditProfile';
 import RecruiterProfile from './pages/RecruiterProfile';
 import CompanyProfile from './pages/CompanyProfile';
+// import RecruiterSeekerProfile from './pages/RecruiterSeekerProfile';
+import RecruiterNotifications from './pages/RecruiterNotifications';
 
 function App() {
   return (
@@ -145,6 +147,18 @@ function App() {
             }
           />
 
+          {/* <Route
+            path="/recruiter/seeker-profile/:userId"
+            element={
+              <ProtectedRoute requiredRole="recruiter">
+                <RecruiterSeekerProfile />
+              </ProtectedRoute>
+            }
+          /> */}
+
+
+          
+
           {/* Recruiter Routes */}
           <Route
             path="/recruiter"
@@ -232,6 +246,15 @@ function App() {
             element={
               <ProtectedRoute>
                 <Messages />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/recruiterNotifications"
+            element={
+              <ProtectedRoute requiredRole="recruiter">
+                <RecruiterNotifications />
               </ProtectedRoute>
             }
           />

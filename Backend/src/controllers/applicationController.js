@@ -3,47 +3,61 @@ const Job = require('../models/Job');
 
 // POST /api/applications/apply
 exports.apply = async (req, res) => {
-  const {
-    jobId,
-    fullName,
-    email,
-    phone,
-    resumeUrl,
-    coverLetter,
-    linkedinLink,
-    githubLink,
-    portfolioLink,
-    majorProjectLink,
-    customAnswers,
-  } = req.body;
+  try {
+    const {
+      jobId,
+      fullName,
+      email,
+      phone,
+      coverLetter,
+      linkedinLink,
+      githubLink,
+      portfolioLink,
+      majorProjectLink,
+      customAnswers,
+    } = req.body;
 
-  // If user authenticated, prefer req.user
-  const applicantId = req.user?._id || null;
+    // If user authenticated, prefer req.user
+    const applicantId = req.user?._id || null;
 
-  // Create application
-  const application = new Application({
-    job: jobId,
-    applicant: applicantId,
-    resumeURL: resumeUrl,
-    coverLetter,
-    linkedinLink,
-    githubLink,
-    portfolioLink,
-    majorProjectLink,
-    answers: Object.keys(customAnswers || {}).map((k) => ({
-      questionId: k,
-      question: '', // frontend question text is stored on job; keep id here
-      answer: customAnswers[k],
-    })),
-    status: 'New',
-  });
+    // Get resume file path or URL
+    let resumeURL = null;
+    if (req.file) {
+      // If file was uploaded, create path or URL
+      resumeURL = `/uploads/resumes/${req.file.filename}`;
+    }
 
-  await application.save();
+    // Create application
+    const application = new Application({
+      job: jobId,
+      applicant: applicantId,
+      fullName: fullName,  
+      email: email,        
+      phone: phone,
+      resumeURL: resumeURL,
+      coverLetter,
+      linkedinLink,
+      githubLink,
+      portfolioLink,
+      majorProjectLink,
+      answers: Object.keys(JSON.parse(customAnswers || '{}')).map((k) => ({
+        questionId: k,
+        question: '', // frontend question text is stored on job; keep id here
+        answer: JSON.parse(customAnswers)[k],
+      })),
+      status: 'New',
+    });
 
-  // increment job applicationsCount
-  await Job.findByIdAndUpdate(jobId, { $inc: { applicationsCount: 1 } });
+    await application.save();
 
-  res.json({ success: true, application });
+    // increment job applicationsCount
+    await Job.findByIdAndUpdate(jobId, { $inc: { applicationsCount: 1 } });
+
+    res.json({ success: true, application });
+  } catch (error) {
+    console.error('Error applying to job:', error);
+    res.status(400).json({ success: false, message: error.message });
+  }
 };
 
 // list by job

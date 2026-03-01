@@ -268,7 +268,7 @@ const ApplicantDetails = () => {
     );
   }
 
-  const { applicant, job, resumeUrl, coverLetter, answers } = application;
+  const { applicant, job, resumeURL, coverLetter, answers } = application;
 
   return (
     <RecruiterLayout>
@@ -791,7 +791,7 @@ const ApplicantDetails = () => {
                 )}
 
                 {/* Resume Preview */}
-                {resumeUrl && (
+                {resumeURL && (
                   <div className="bg-white rounded-xl shadow-soft overflow-hidden">
                     <button
                       onClick={() => toggleSection('resume')}
@@ -815,7 +815,7 @@ const ApplicantDetails = () => {
                       <div className="px-6 pb-6 border-t border-secondary-100">
                         <div className="mb-4 flex gap-3 flex-col sm:flex-row">
                           <a
-                            href={resumeUrl}
+                            href={resumeURL.startsWith('http') ? resumeURL : `http://localhost:5000${resumeURL}`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex-1 px-4 py-3 bg-primary-50 text-primary-700 rounded-lg text-sm font-medium hover:bg-primary-100 transition-colors text-center inline-flex items-center justify-center gap-2"
@@ -824,8 +824,8 @@ const ApplicantDetails = () => {
                             Open PDF in New Tab
                           </a>
                           <a
-                            href={resumeUrl}
-                            download={`${applicant.firstName}-${applicant.lastName}-Resume.pdf`}
+                            href={resumeURL.startsWith('http') ? resumeURL : `http://localhost:5000${resumeURL}`}
+                            download={`${applicant?.firstName || applicant?.fullName || 'Candidate'}-Resume.pdf`}
                             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-primary-300 text-primary-700 rounded-lg text-sm font-medium hover:bg-primary-50 transition-colors"
                           >
                             <Download className="w-4 h-4" />
@@ -836,7 +836,7 @@ const ApplicantDetails = () => {
                         {/* PDF Viewer */}
                         <div className="w-full bg-secondary-100 rounded-lg overflow-hidden border border-secondary-300">
                           <iframe
-                            src={`${resumeUrl}#toolbar=1&navpanes=0&scrollbar=1`}
+                            src={`${resumeURL.startsWith('http') ? resumeURL : `http://localhost:5000${resumeURL}`}#toolbar=1&navpanes=0&scrollbar=1`}
                             title="Resume PDF"
                             className="w-full h-[600px] sm:h-[800px] border-none"
                             loading="lazy"

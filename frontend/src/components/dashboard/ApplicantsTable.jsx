@@ -70,7 +70,10 @@ const ApplicantsTable = ({
           >
             <div className="flex-1 min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                <h3 className="font-bold text-gray-900 truncate">{applicant.name}</h3>
+                {/* FIXED: Using applicant.fullName with a string fallback */}
+                <h3 className="font-bold text-gray-900 truncate">
+                  {applicant.fullName || "Job Seeker"}
+                </h3>
                 <span className={`w-fit px-2.5 py-0.5 rounded-full text-[10px] sm:text-xs font-bold border ${getStatusColor(applicant.status)}`}>
                   {applicant.status}
                 </span>

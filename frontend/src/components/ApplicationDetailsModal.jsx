@@ -24,6 +24,53 @@ const ApplicationDetailsModal = ({ application, isOpen, onClose, onWithdraw }) =
 
   const canWithdraw = !['Rejected', 'Hired'].includes(application.status);
 
+  // Function to download resume with proper URL handling
+  const downloadResume = (resumeUrl, resumeName) => {
+    console.log('Download clicked with URL:', resumeUrl);
+    
+    if (!resumeUrl) {
+      console.error('Resume URL is empty or undefined');
+      alert('Resume URL not available');
+      return;
+    }
+
+    try {
+      // Build full URL if it's a relative path
+      let fullUrl = resumeUrl;
+      if (!resumeUrl.startsWith('http')) {
+        fullUrl = `http://localhost:5000${resumeUrl}`;
+      }
+
+      console.log('Full URL:', fullUrl);
+
+      // Create a temporary anchor element
+      const link = document.createElement('a');
+      link.href = fullUrl;
+      link.setAttribute('download', resumeName || 'resume.pdf');
+      link.setAttribute('target', '_blank');
+      link.setAttribute('rel', 'noopener noreferrer');
+      
+      // Add to DOM temporarily
+      document.body.appendChild(link);
+      
+      console.log('Triggering download for:', resumeName);
+      // Trigger click
+      link.click();
+      
+      // Remove from DOM after a short delay
+      setTimeout(() => {
+        document.body.removeChild(link);
+      }, 100);
+      
+      console.log('Download completed');
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      alert('Failed to download. Opening in new tab...');
+      // Fallback: open in new tab
+      window.open(resumeUrl, '_blank');
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-gray-900 bg-opacity-40 z-50 flex items-center justify-center p-4 backdrop-blur-sm">
       <style>{`
@@ -108,21 +155,45 @@ const ApplicationDetailsModal = ({ application, isOpen, onClose, onWithdraw }) =
           <div>
             <h3 className="font-bold text-gray-900 mb-4">Your Submission</h3>
             <div className="space-y-4">
-              {/* Resume */}
+              {/* Application Resume */}
               <div>
-                <p className="text-xs font-bold text-gray-600 uppercase mb-2">Resume</p>
+                <p className="text-xs font-bold text-gray-600 uppercase mb-2">Resume (Submitted with Application)</p>
                 {application.resumeURL ? (
-                  <a
-                    href={application.resumeURL}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-100 transition font-semibold"
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log('Application Resume clicked:', application.resumeURL);
+                      downloadResume(application.resumeURL, `application-${application._id}.pdf`);
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-200 text-blue-600 rounded-lg hover:bg-blue-100 transition font-semibold w-full justify-center cursor-pointer"
                   >
                     <Download size={16} />
-                    Download Resume
-                  </a>
+                    Download Application Resume
+                  </button>
                 ) : (
-                  <p className="text-gray-500 text-sm">No resume provided</p>
+                  <p className="text-gray-500 text-sm">No resume provided with application</p>
+                )}
+              </div>
+
+              {/* Profile Resume */}
+              <div>
+                <p className="text-xs font-bold text-gray-600 uppercase mb-2">Resume (From Profile)</p>
+                {application.applicant && application.applicant.resumeURL ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      console.log('Profile Resume clicked:', application.applicant.resumeURL);
+                      downloadResume(application.applicant.resumeURL, `profile-${application.applicant._id}.pdf`);
+                    }}
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-50 border border-emerald-200 text-emerald-600 rounded-lg hover:bg-emerald-100 transition font-semibold w-full justify-center cursor-pointer"
+                  >
+                    <Download size={16} />
+                    Download Profile Resume
+                  </button>
+                ) : (
+                  <p className="text-gray-500 text-sm">No resume uploaded on profile</p>
                 )}
               </div>
 
