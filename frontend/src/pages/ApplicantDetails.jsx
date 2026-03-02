@@ -32,6 +32,7 @@ import InfoCard from '../components/recruiter/InfoCard';
 import ActionButton from '../components/recruiter/ActionButton';
 import SectionHeader from '../components/recruiter/SectionHeader';
 import { mockApplicationData } from '../utils/mockData';
+import { getFullImageUrl } from '../utils/imageUtils';
 
 const ApplicantDetails = () => {
   const { id } = useParams();
@@ -52,9 +53,7 @@ const ApplicantDetails = () => {
     resume: true,
     profile: true,
   });
-  const [showStatusModal, setShowStatusModal] = useState(false);
-  const [showInterviewModal, setShowInterviewModal] = useState(false);
-  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [activeAction, setActiveAction] = useState(null); // 'status', 'interview', 'reject'
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState('');
   const [formData, setFormData] = useState({
@@ -136,13 +135,13 @@ const ApplicantDetails = () => {
 
       if (response.data.success) {
         await fetchApplicationDetails();
-        setShowStatusModal(false);
+        setActiveAction(null);
       }
     } catch (err) {
       // If running with mock/demo data, allow local status transitions for UI flow.
       if (useMockData) {
         applyStatusLocally(formData.status);
-        setShowStatusModal(false);
+        setActiveAction(null);
         setActionError('');
       } else {
         setActionError(err.response?.data?.message || 'Failed to update status');
@@ -190,7 +189,7 @@ const ApplicantDetails = () => {
 
       if (response.data.success) {
         await fetchApplicationDetails();
-        setShowInterviewModal(false);
+        setActiveAction(null);
       }
     } catch (err) {
       setActionError(err.response?.data?.message || 'Failed to schedule interview');
@@ -211,7 +210,7 @@ const ApplicantDetails = () => {
 
       if (response.data.success) {
         await fetchApplicationDetails();
-        setShowRejectModal(false);
+        setActiveAction(null);
       }
     } catch (err) {
       setActionError(err.response?.data?.message || 'Failed to reject application');
@@ -292,9 +291,17 @@ const ApplicantDetails = () => {
                   <div className="flex flex-col sm:flex-row gap-6 items-start">
                     {/* Profile Photo */}
                     <div className="flex-shrink-0">
-                      <div className="w-24 h-24 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
-                        {applicant?.firstName?.charAt(0)}{applicant?.lastName?.charAt(0)}
-                      </div>
+                      {applicant?.profilePhoto ? (
+                        <img
+                          src={getFullImageUrl(applicant.profilePhoto)}
+                          alt={`${applicant?.firstName} ${applicant?.lastName}`}
+                          className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-soft"
+                        />
+                      ) : (
+                        <div className="w-24 h-24 bg-gradient-to-br from-primary-400 to-primary-600 rounded-full flex items-center justify-center text-white text-2xl font-bold">
+                          {applicant?.firstName?.charAt(0)}{applicant?.lastName?.charAt(0)}
+                        </div>
+                      )}
                     </div>
 
                     {/* Candidate Info */}
@@ -815,7 +822,7 @@ const ApplicantDetails = () => {
                       <div className="px-6 pb-6 border-t border-secondary-100">
                         <div className="mb-4 flex gap-3 flex-col sm:flex-row">
                           <a
-                            href={resumeURL.startsWith('http') ? resumeURL : `http://localhost:5000${resumeURL}`}
+                            href={getFullImageUrl(resumeURL)}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex-1 px-4 py-3 bg-primary-50 text-primary-700 rounded-lg text-sm font-medium hover:bg-primary-100 transition-colors text-center inline-flex items-center justify-center gap-2"
@@ -824,7 +831,7 @@ const ApplicantDetails = () => {
                             Open PDF in New Tab
                           </a>
                           <a
-                            href={resumeURL.startsWith('http') ? resumeURL : `http://localhost:5000${resumeURL}`}
+                            href={getFullImageUrl(resumeURL)}
                             download={`${applicant?.firstName || applicant?.fullName || 'Candidate'}-Resume.pdf`}
                             className="flex-1 flex items-center justify-center gap-2 px-4 py-3 border border-primary-300 text-primary-700 rounded-lg text-sm font-medium hover:bg-primary-50 transition-colors"
                           >
@@ -836,7 +843,7 @@ const ApplicantDetails = () => {
                         {/* PDF Viewer */}
                         <div className="w-full bg-secondary-100 rounded-lg overflow-hidden border border-secondary-300">
                           <iframe
-                            src={`${resumeURL.startsWith('http') ? resumeURL : `https://job-portal-3jkf.onrender.com${resumeURL}`}#toolbar=1&navpanes=0&scrollbar=1`}
+                            src={`${getFullImageUrl(resumeURL)}#toolbar=1&navpanes=0&scrollbar=1`}
                             title="Resume PDF"
                             className="w-full h-[600px] sm:h-[800px] border-none"
                             loading="lazy"
@@ -866,103 +873,203 @@ const ApplicantDetails = () => {
                       </p>
                     </div>
                   )}
-                  {/* Status Info Card */}
-                  <div className="bg-white rounded-xl shadow-soft p-6">
-                    <h3 className="font-semibold text-secondary-900 mb-4">Application Status</h3>
-                    <div className="mb-4">
-                      <StatusBadge status={application.status} size="lg" />
+                  {/* Application Management Card */}
+                  <div className="bg-white rounded-xl shadow-soft overflow-hidden border border-secondary-100">
+                    <div className="p-6 bg-black text-white">
+                      <h3 className="font-bold flex items-center gap-2 text-lg">
+                        <Briefcase className="w-5 h-5 text-primary-400" />
+                        Application Management
+                      </h3>
                     </div>
-                    <p className="text-xs text-secondary-600 mb-4">
-                      Updated {new Date(application.updatedAt).toLocaleDateString()}
-                    </p>
-                    {actionError && (
-                      <p className="text-xs text-red-600 mb-3">{actionError}</p>
-                    )}
-                    <div className="grid grid-cols-2 gap-2 mb-3">
-                      <button
-                        onClick={() => handleQuickStatusUpdate('Reviewed')}
-                        disabled={actionLoading || application.status === 'Reviewed'}
-                        className="px-3 py-2 text-xs rounded-lg border border-yellow-300 bg-yellow-50 text-yellow-800 hover:bg-yellow-100 disabled:opacity-50"
-                      >
-                        Mark Reviewed
-                      </button>
-                      <button
-                        onClick={() => handleQuickStatusUpdate('Shortlisted')}
-                        disabled={actionLoading || application.status === 'Shortlisted'}
-                        className="px-3 py-2 text-xs rounded-lg border border-purple-300 bg-purple-50 text-purple-800 hover:bg-purple-100 disabled:opacity-50"
-                      >
-                        Shortlist
-                      </button>
-                    </div>
-                    <ActionButton
-                      label="Change Status"
-                      variant="secondary"
-                      fullWidth
-                      loading={actionLoading}
-                      onClick={() => {
-                        setActionError('');
-                        setShowStatusModal(true);
-                      }}
-                    />
-                  </div>
+                    
+                    <div className="p-6 space-y-6">
+                      {/* Current Status */}
+                      <div>
+                        <p className="text-xs font-semibold text-secondary-500 uppercase tracking-wider mb-2">Current Status</p>
+                        <div className="flex items-center justify-between">
+                          <StatusBadge status={application.status} size="lg" />
+                          <p className="text-[10px] text-secondary-400">
+                            Updated {new Date(application.updatedAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
 
-                  {/* Action Buttons */}
-                  <div className="bg-white rounded-xl shadow-soft p-6 space-y-3">
-                    <ActionButton
-                      label="Schedule Interview"
-                      icon={Calendar}
-                      variant="primary"
-                      fullWidth
-                      onClick={() => setShowInterviewModal(true)}
-                      disabled={
-                        ['Rejected', 'Hired'].includes(application.status) ||
-                        application.interviewScheduledAt
-                      }
-                    />
-                    <ActionButton
-                      label="Message Candidate"
-                      icon={MessageSquare}
-                      variant="secondary"
-                      fullWidth
-                      onClick={() => {
-                        // Navigate to messages with candidate ID
-                        navigate(`/messages?candidate=${applicant._id}`);
-                      }}
-                    />
-                    <ActionButton
-                      label="Download Resume"
-                      icon={Download}
-                      variant="secondary"
-                      fullWidth
-                      onClick={() => {
-                        const a = document.createElement('a');
-                        a.href = resumeURL.startsWith('http') ? resumeURL : `http://localhost:5000${resumeURL}`;
-                        a.download = `${applicant.firstName}-${applicant.lastName}-resume.pdf`;
-                        a.click();
-                      }}
-                    />
-                    <ActionButton
-                      label="Reject"
-                      icon={AlertCircle}
-                      variant="danger"
-                      fullWidth
-                      onClick={() => setShowRejectModal(true)}
-                      disabled={['Rejected', 'Hired'].includes(application.status)}
-                    />
+                      {actionError && (
+                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-xs text-red-600">
+                          {actionError}
+                        </div>
+                      )}
+
+                      {/* Main Actions Grid */}
+                      <div className="space-y-4">
+                        {/* Status Dropdown */}
+                        <div>
+                          <p className="text-xs font-semibold text-secondary-500 uppercase tracking-wider mb-2">Update Status</p>
+                          <select
+                            value={formData.status || application.status}
+                            onChange={(e) => handleQuickStatusUpdate(e.target.value)}
+                            disabled={actionLoading}
+                            className="w-full px-3 py-2.5 bg-secondary-50 border border-secondary-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all disabled:opacity-50 appearance-none"
+                            style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0.75rem center', backgroundSize: '1rem' }}
+                          >
+                            <option value="New">New Application</option>
+                            <option value="Reviewed">Mark as Reviewed</option>
+                            <option value="Shortlisted">Shortlist Candidate</option>
+                            <option value="Interview Scheduled">Interview Scheduled</option>
+                            <option value="Rejected">Reject Candidate</option>
+                            <option value="Hired">Hire Candidate</option>
+                          </select>
+                        </div>
+
+                        {/* Interactive Actions */}
+                        <div className="space-y-2">
+                          <button
+                            onClick={() => {
+                              if (activeAction !== 'interview' && application.interviewScheduledAt) {
+                                setFormData(prev => ({
+                                  ...prev,
+                                  interviewDate: new Date(application.interviewScheduledAt).toISOString().slice(0, 16),
+                                  interviewMessage: application.interviewMessage || '',
+                                }));
+                              }
+                              setActiveAction(activeAction === 'interview' ? null : 'interview');
+                            }}
+                            disabled={['Rejected', 'Hired'].includes(application.status)}
+                            className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
+                              activeAction === 'interview' 
+                                ? 'bg-primary-50 border-primary-200 text-primary-700 shadow-sm' 
+                                : 'bg-white border-secondary-200 text-secondary-700 hover:border-primary-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 font-semibold">
+                              <Calendar className="w-5 h-5 text-primary-600" />
+                              {application.interviewScheduledAt ? 'Reschedule Interview' : 'Schedule Interview'}
+                            </div>
+                            {activeAction === 'interview' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          </button>
+
+                          {activeAction === 'interview' && (
+                            <div className="p-4 bg-primary-50 border border-primary-100 rounded-xl space-y-4 animate-in slide-in-from-top-2 duration-200">
+                              <div>
+                                <label className="block text-xs font-bold text-primary-900 mb-1.5 uppercase">Date & Time</label>
+                                  <input 
+                                  type="datetime-local"
+                                    value={formData.interviewDate}
+                                    onChange={(e) => setFormData(prev => ({ ...prev, interviewDate: e.target.value }))}
+                                  className="w-full px-3 py-2 bg-white border border-primary-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-inner"
+                                  />
+                                </div>
+                              <div>
+                                <label className="block text-xs font-bold text-primary-900 mb-1.5 uppercase">Candidate Message</label>
+                                <textarea
+                                  value={formData.interviewMessage}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, interviewMessage: e.target.value }))}
+                                  rows="3"
+                                  placeholder="Meeting link, instructions..."
+                                  className="w-full px-3 py-2 bg-white border border-primary-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none shadow-inner"
+                                />
+                              </div>
+                              <button
+                                onClick={handleScheduleInterview}
+                                disabled={actionLoading || !formData.interviewDate}
+                                className="w-full py-2.5 bg-black text-white rounded-lg text-sm font-bold hover:bg-secondary-900 disabled:opacity-50 transition-colors shadow-md"
+                              >
+                                {actionLoading ? 'Scheduling...' : application.interviewScheduledAt ? 'Confirm Reschedule' : 'Confirm & Send Invitation'}
+                              </button>
+                            </div>
+                          )}
+
+                          <button
+                            onClick={() => setActiveAction(activeAction === 'reject' ? null : 'reject')}
+                            disabled={['Rejected', 'Hired'].includes(application.status)}
+                            className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
+                              activeAction === 'reject' 
+                                ? 'bg-red-50 border-red-200 text-red-700 shadow-sm' 
+                                : 'bg-white border-secondary-200 text-secondary-700 hover:border-red-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-2 font-semibold">
+                              <AlertCircle className="w-5 h-5 text-red-600" />
+                              Reject Application
+                            </div>
+                            {activeAction === 'reject' ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                          </button>
+
+                          {activeAction === 'reject' && (
+                            <div className="p-4 bg-red-50 border border-red-100 rounded-xl space-y-4 animate-in slide-in-from-top-2 duration-200">
+                              <p className="text-xs text-red-800 bg-red-100 p-2 rounded-lg">Warning: This will notify the candidate of rejection.</p>
+                              <div>
+                                <label className="block text-xs font-bold text-red-900 mb-1.5 uppercase tracking-wide">Feedback / Reason (Optional)</label>
+                                <textarea
+                                  value={formData.rejectionReason}
+                                  onChange={(e) => setFormData(prev => ({ ...prev, rejectionReason: e.target.value }))}
+                                  rows="3"
+                                  placeholder="Help the candidate improve..."
+                                  className="w-full px-3 py-2 bg-white border border-red-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-red-500 resize-none shadow-inner"
+                                />
+                              </div>
+                              <button
+                                onClick={handleRejectApplication}
+                                disabled={actionLoading}
+                                className="w-full py-2.5 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 disabled:opacity-50 transition-colors shadow-md"
+                              >
+                                {actionLoading ? 'Rejecting...' : 'Confirm Rejection'}
+                              </button>
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="relative py-2">
+                          <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-secondary-100"></div></div>
+                          <div className="relative flex justify-center text-xs uppercase"><span className="bg-white px-2 text-secondary-400">Other Tools</span></div>
+                        </div>
+
+                        {/* Secondary Actions */}
+                        <div className="grid grid-cols-1 gap-2">
+                          <ActionButton
+                            label="Message Candidate"
+                            icon={MessageSquare}
+                            variant="secondary"
+                            fullWidth
+                            size="sm"
+                            className="rounded-xl border border-secondary-200 bg-white hover:bg-secondary-50"
+                            onClick={() => navigate(`/messages?candidate=${applicant._id}`)}
+                          />
+                          <ActionButton
+                            label="Download Resume"
+                            icon={Download}
+                            variant="secondary"
+                            fullWidth
+                            size="sm"
+                            className="rounded-xl border border-secondary-200 bg-white hover:bg-secondary-50"
+                            onClick={() => {
+                              const a = document.createElement('a');
+                              a.href = getFullImageUrl(resumeURL);
+                              a.download = `${applicant.firstName}-${applicant.lastName}-resume.pdf`;
+                              a.click();
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   {/* Interview Info */}
                   {application.interviewScheduledAt && (
-                    <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-6">
-                      <div className="flex items-start gap-3">
-                        <Clock className="w-5 h-5 text-indigo-600 mt-0.5" />
+                    <div className="bg-indigo-50 border border-indigo-100 rounded-2xl p-6 shadow-sm">
+                      <div className="flex items-start gap-4">
+                        <div className="bg-indigo-600 p-2 rounded-lg shadow-md">
+                          <Clock className="w-5 h-5 text-white" />
+                        </div>
                         <div>
-                          <h4 className="font-semibold text-indigo-900">Interview Scheduled</h4>
-                          <p className="text-sm text-indigo-700 mt-1">
-                            {new Date(application.interviewScheduledAt).toLocaleString()}
+                          <h4 className="font-bold text-indigo-900">Upcoming Interview</h4>
+                          <p className="text-sm text-indigo-700 font-medium mt-1">
+                            {new Date(application.interviewScheduledAt).toLocaleString([], { dateStyle: 'long', timeStyle: 'short' })}
                           </p>
                           {application.interviewMessage && (
-                            <p className="text-sm text-indigo-600 mt-2">{application.interviewMessage}</p>
+                            <div className="bg-white p-3 rounded-lg border border-indigo-200 mt-3 italic text-sm text-indigo-800 shadow-sm">
+                              "{application.interviewMessage}"
+                            </div>
                           )}
                         </div>
                       </div>
@@ -973,137 +1080,6 @@ const ApplicantDetails = () => {
             </div>
           </div>
         </div>
-
-        {/* Status Modal */}
-        {showStatusModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-              <h3 className="text-xl font-bold text-secondary-900 mb-4">Change Application Status</h3>
-              {actionError && (
-                <p className="mb-3 text-sm text-red-600">{actionError}</p>
-              )}
-
-              <select
-                value={formData.status}
-                onChange={(e) => setFormData((prev) => ({ ...prev, status: e.target.value }))}
-                className="w-full px-4 py-2 border border-secondary-300 rounded-lg mb-6 focus:outline-none focus:ring-2 focus:ring-primary-500"
-              >
-                <option value="">Select Status</option>
-                <option value="New">New</option>
-                <option value="Reviewed">Reviewed</option>
-                <option value="Shortlisted">Shortlisted</option>
-                <option value="Interview Scheduled">Interview Scheduled</option>
-                <option value="Rejected">Rejected</option>
-                <option value="Hired">Hired</option>
-              </select>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => {
-                    setActionError('');
-                    setShowStatusModal(false);
-                  }}
-                  className="flex-1 px-4 py-2 border border-secondary-300 text-secondary-700 rounded-lg hover:bg-secondary-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleUpdateStatus}
-                  disabled={actionLoading || !formData.status}
-                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
-                >
-                  {actionLoading ? 'Updating...' : 'Update'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Interview Modal */}
-        {showInterviewModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-              <h3 className="text-xl font-bold text-secondary-900 mb-4">Schedule Interview</h3>
-
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-secondary-900 mb-2">
-                  Interview Date & Time
-                </label>
-                <input
-                  type="datetime-local"
-                  value={formData.interviewDate}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, interviewDate: e.target.value }))}
-                  className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-secondary-900 mb-2">
-                  Message for Candidate (Optional)
-                </label>
-                <textarea
-                  value={formData.interviewMessage}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, interviewMessage: e.target.value }))}
-                  rows="3"
-                  placeholder="Add interview details, meeting link, or any other info..."
-                  className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
-                />
-              </div>
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowInterviewModal(false)}
-                  className="flex-1 px-4 py-2 border border-secondary-300 text-secondary-700 rounded-lg hover:bg-secondary-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleScheduleInterview}
-                  disabled={actionLoading || !formData.interviewDate}
-                  className="flex-1 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 disabled:opacity-50 transition-colors"
-                >
-                  {actionLoading ? 'Scheduling...' : 'Schedule'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Reject Modal */}
-        {showRejectModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-lg max-w-md w-full p-6">
-              <h3 className="text-xl font-bold text-red-900 mb-2">Reject Application</h3>
-              <p className="text-secondary-600 text-sm mb-4">
-                This action cannot be undone. The applicant status will be changed to "Rejected".
-              </p>
-
-              <textarea
-                value={formData.rejectionReason}
-                onChange={(e) => setFormData((prev) => ({ ...prev, rejectionReason: e.target.value }))}
-                rows="3"
-                placeholder="Reason for rejection (optional)..."
-                className="w-full px-4 py-2 border border-secondary-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 resize-none mb-6"
-              />
-
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowRejectModal(false)}
-                  className="flex-1 px-4 py-2 border border-secondary-300 text-secondary-700 rounded-lg hover:bg-secondary-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleRejectApplication}
-                  disabled={actionLoading}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 transition-colors"
-                >
-                  {actionLoading ? 'Rejecting...' : 'Confirm Reject'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </RecruiterLayout>
   );

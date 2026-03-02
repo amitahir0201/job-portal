@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
+import api from '../services/api';
 import { sendRecruiterInvitation } from '../services/adminEmailService';
 
 const AdminCreateRecruiter = () => {
@@ -43,8 +44,8 @@ const AdminCreateRecruiter = () => {
       console.log('[AdminCreateRecruiter] Creating recruiter:', formData.email);
 
       // 1️⃣ Call backend to create recruiter
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/admin/create-recruiter`,
+      const response = await api.post(
+        '/admin/create-recruiter',
         formData
       );
 

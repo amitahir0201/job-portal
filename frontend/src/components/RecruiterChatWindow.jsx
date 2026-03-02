@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Phone, Info, ArrowLeft, Check, CheckCheck, Loader, MessageCircle } from 'lucide-react';
+import { getFullImageUrl } from '../utils/imageUtils';
 import MessageBubble from './MessageBubble';
 import MessageList from './MessageList';
 import MessageInput from './MessageInput';
@@ -44,13 +45,7 @@ const RecruiterChatWindow = ({
             {/* Seeker Info */}
             <div className="relative flex-shrink-0">
               <img
-                src={
-                  conversation.profile?.profilePhoto 
-                    ? (conversation.profile.profilePhoto.startsWith('http') 
-                        ? conversation.profile.profilePhoto 
-                        : `http://localhost:5000${conversation.profile.profilePhoto}`)
-                    : `https://ui-avatars.com/api/?name=${conversation.name}&background=10b981&color=fff`
-                }
+                src={getFullImageUrl(conversation.profile?.profilePhoto) || `https://ui-avatars.com/api/?name=${conversation.name}&background=10b981&color=fff`}
                 alt={conversation.name}
                 className="w-11 h-11 rounded-full object-cover border-2 border-emerald-100"
               />

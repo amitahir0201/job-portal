@@ -7,6 +7,7 @@ import MessageList from '../components/MessageList';
 import MessageInput from '../components/MessageInput';
 import { AlertCircle, Loader } from 'lucide-react';
 import api from '../services/api';
+import { getFullImageUrl } from '../utils/imageUtils';
 
 const JobSeekerMessages = () => {
   const { jobId } = useParams();
@@ -74,11 +75,7 @@ const JobSeekerMessages = () => {
 
           // Get recruiter info from job
           if (jobData.recruiterId) {
-            const recruiterPhotoUrl = jobData.recruiterPhoto
-              ? (jobData.recruiterPhoto.startsWith('http')
-                  ? jobData.recruiterPhoto
-                  : `http://localhost:5000${jobData.recruiterPhoto}`)
-              : `https://ui-avatars.com/api/?name=${jobData.companyName || 'Recruiter'}&background=10b981&color=fff`;
+            const recruiterPhotoUrl = getFullImageUrl(jobData.recruiterPhoto) || `https://ui-avatars.com/api/?name=${jobData.companyName || 'Recruiter'}&background=10b981&color=fff`;
 
             setRecruiter({
               name: jobData.companyName || 'Recruiter',

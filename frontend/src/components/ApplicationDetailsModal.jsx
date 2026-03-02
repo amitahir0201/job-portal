@@ -1,5 +1,7 @@
 import React from 'react';
 import { X, Download, Trash2, MapPin, DollarSign, Briefcase, Github, Linkedin, Globe, FileText } from 'lucide-react';
+import api from '../services/api';
+import { getFullImageUrl } from '../utils/imageUtils';
 import StatusTimeline from './StatusTimeline';
 
 const getStatusColor = (status) => {
@@ -26,48 +28,27 @@ const ApplicationDetailsModal = ({ application, isOpen, onClose, onWithdraw }) =
 
   // Function to download resume with proper URL handling
   const downloadResume = (resumeUrl, resumeName) => {
-    console.log('Download clicked with URL:', resumeUrl);
+    const fullUrl = getFullImageUrl(resumeUrl);
     
-    if (!resumeUrl) {
-      console.error('Resume URL is empty or undefined');
+    if (!fullUrl) {
       alert('Resume URL not available');
       return;
     }
 
     try {
-      // Build full URL if it's a relative path
-      let fullUrl = resumeUrl;
-      if (!resumeUrl.startsWith('http')) {
-        fullUrl = `https://job-portal-3jkf.onrender.com${resumeUrl}`;
-      }
-
-      console.log('Full URL:', fullUrl);
-
-      // Create a temporary anchor element
       const link = document.createElement('a');
       link.href = fullUrl;
       link.setAttribute('download', resumeName || 'resume.pdf');
       link.setAttribute('target', '_blank');
       link.setAttribute('rel', 'noopener noreferrer');
-      
-      // Add to DOM temporarily
       document.body.appendChild(link);
-      
-      console.log('Triggering download for:', resumeName);
-      // Trigger click
       link.click();
-      
-      // Remove from DOM after a short delay
       setTimeout(() => {
         document.body.removeChild(link);
       }, 100);
-      
-      console.log('Download completed');
     } catch (error) {
       console.error('Error downloading file:', error);
-      alert('Failed to download. Opening in new tab...');
-      // Fallback: open in new tab
-      window.open(resumeUrl, '_blank');
+      window.open(fullUrl, '_blank');
     }
   };
 

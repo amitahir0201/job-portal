@@ -56,3 +56,37 @@ exports.updateCompanyProfile = async (req, res) => {
   }
   res.json({ success: true, data: company });
 };
+
+// POST /api/profile/upload-photo
+exports.uploadPhoto = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'No file uploaded' });
+  }
+
+  const user = await User.findById(req.user._id);
+  user.profilePhoto = `/uploads/${req.file.filename}`;
+  await user.save();
+
+  res.json({
+    success: true,
+    message: 'Photo uploaded successfully',
+    profilePhoto: user.profilePhoto
+  });
+};
+
+// POST /api/profile/resume
+exports.uploadResume = async (req, res) => {
+  if (!req.file) {
+    return res.status(400).json({ success: false, message: 'No file uploaded' });
+  }
+
+  const user = await User.findById(req.user._id);
+  user.resumeURL = `/uploads/${req.file.filename}`;
+  await user.save();
+
+  res.json({
+    success: true,
+    message: 'Resume uploaded successfully',
+    resumeURL: user.resumeURL
+  });
+};

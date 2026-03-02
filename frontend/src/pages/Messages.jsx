@@ -8,6 +8,7 @@ import MessageList from '../components/MessageList';
 import MessageInput from '../components/MessageInput';
 import { AlertCircle, MessageCircle } from 'lucide-react';
 import api from '../services/api';
+import { getFullImageUrl } from '../utils/imageUtils';
 
 const Messages = () => {
   const { user } = useAuth();
@@ -308,13 +309,7 @@ const Messages = () => {
                     </button>
                     <div className="relative flex-shrink-0">
                       <img
-                        src={
-                          selectedConversation.profile?.profilePhoto 
-                            ? (selectedConversation.profile.profilePhoto.startsWith('http') 
-                                ? selectedConversation.profile.profilePhoto 
-                                : `http://localhost:5000${selectedConversation.profile.profilePhoto}`)
-                            : `https://ui-avatars.com/api/?name=${selectedConversation.name}&background=10b981&color=fff`
-                        }
+                        src={getFullImageUrl(selectedConversation.profile?.profilePhoto) || `https://ui-avatars.com/api/?name=${selectedConversation.name}&background=10b981&color=fff`}
                         alt={selectedConversation.name}
                         className="w-11 h-11 rounded-full object-cover border-2 border-emerald-100"
                       />
@@ -356,7 +351,7 @@ const Messages = () => {
               </div>
 
               {/* Message Input */}
-              <div className="border-t border-gray-100 bg-white p-4 flex-shrink-0 shadow-md">
+              <div className="border-t border-gray-100 bg-white p-2 sm:p-4 flex-shrink-0 shadow-md">
                 <MessageInput
                   onSendMessage={handleSendMessage}
                   disabled={!selectedConversation}

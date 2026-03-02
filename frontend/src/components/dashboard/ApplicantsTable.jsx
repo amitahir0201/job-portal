@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ChevronDown, ChevronRight, Mail, Calendar, FileText, UserCheck, X, Clock, MessageSquare } from 'lucide-react';
+import { getFullImageUrl } from '../../utils/imageUtils';
 
 /**
  * ApplicantsTable Component
@@ -77,23 +78,9 @@ const ApplicantsTable = ({
       return;
     }
     
-    const getBaseUrl = () => {
-      if (import.meta.env.VITE_API_URL) {
-        return import.meta.env.VITE_API_URL.replace('/api', '');
-      }
-      return 'http://localhost:5000';
-    };
-
-    const baseUrl = getBaseUrl();
-    // Ensure resumeUrl starts with / if it's a relative path
-    const cleanPath = resumeUrl.startsWith('http') ? resumeUrl : (resumeUrl.startsWith('/') ? resumeUrl : `/${resumeUrl}`);
-    
-    if (cleanPath.startsWith('http')) {
-      window.open(cleanPath, '_blank');
-    } else {
-      // Use URL constructor to handle slashes correctly
-      const url = new URL(cleanPath, baseUrl);
-      window.open(url.toString(), '_blank');
+    const fullUrl = getFullImageUrl(resumeUrl);
+    if (fullUrl) {
+      window.open(fullUrl, '_blank');
     }
   };
 

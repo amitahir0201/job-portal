@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Loader, Check } from 'lucide-react';
 import api from '../services/api';
+import { getFullImageUrl } from '../utils/imageUtils';
 
 const DUMMY_PROFILE = {
   fullName: 'John Doe',
@@ -311,7 +312,7 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
                     </span>
                   </div>
                   <a 
-                    href={profile.resumeURL.startsWith('http') ? profile.resumeURL : `http://localhost:5000${profile.resumeURL}`}
+                    href={getFullImageUrl(profile.resumeURL)}
                     target="_blank" 
                     rel="noopener noreferrer"
                     className="text-xs text-emerald-600 hover:underline font-bold"

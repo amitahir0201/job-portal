@@ -1,15 +1,17 @@
 import React from 'react';
 import { Mail, Phone, MapPin, Download, Edit2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getFullImageUrl } from '../../utils/imageUtils';
 
 const ProfileHeaderSection = ({ profile }) => {
   const navigate = useNavigate();
+  const profilePhotoUrl = getFullImageUrl(profile.profilePhoto);
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
       {/* Banner */}
       <div className="h-32 bg-gradient-to-r from-emerald-500 to-emerald-600"></div>
-
+ 
       {/* Profile Info */}
       <div className="px-6 py-8">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between">
@@ -17,11 +19,11 @@ const ProfileHeaderSection = ({ profile }) => {
           <div className="flex flex-col md:flex-row md:items-end gap-6 mb-6 md:mb-0">
             {/* Profile Photo */}
             <div className="relative -mt-16 mb-4 md:mb-0">
-              {profile.profilePhoto ? (
+              {profilePhotoUrl ? (
                 <img
-                  src={profile.profilePhoto}
+                  src={profilePhotoUrl}
                   alt={profile.fullName}
-                  className="w-32 h-32 rounded-full border-4 border-white shadow-md object-cover"
+                  className="w-32 h-32 rounded-full border-4 border-white object-cover"
                 />
               ) : (
                 <div className="w-32 h-32 rounded-full border-4 border-white shadow-md bg-emerald-100 flex items-center justify-center">
@@ -61,9 +63,9 @@ const ProfileHeaderSection = ({ profile }) => {
               <Edit2 size={18} />
               Edit
             </button>
-            {profile.resumeURL && (
+            {getFullImageUrl(profile.resumeURL) && (
               <a
-                href={profile.resumeURL}
+                href={getFullImageUrl(profile.resumeURL)}
                 download
                 target="_blank"
                 rel="noopener noreferrer"

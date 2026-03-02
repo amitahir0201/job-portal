@@ -557,7 +557,7 @@ const PostJob = () => {
               </SectionCard>
 
               {/* Job Status */}
-              <SectionCard
+              {/* <SectionCard
                 title="Job Status"
                 icon={<Briefcase size={18} className="sm:w-5 sm:h-5" />}
                 description="Save as draft or publish immediately"
@@ -597,7 +597,7 @@ const PostJob = () => {
                     </div>
                   </label>
                 </div>
-              </SectionCard>
+              </SectionCard> */}
             </div>
 
             {/* Right Column - Summary */}

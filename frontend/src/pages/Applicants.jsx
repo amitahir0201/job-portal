@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import RecruiterLayout from '../layouts/RecruiterLayout';
+import { getFullImageUrl } from '../utils/imageUtils';
 
 const Applicants = () => {
   const { jobId } = useParams();
@@ -77,10 +78,19 @@ const Applicants = () => {
             <div key={app._id} className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
               <div className="flex justify-between items-start">
                 <div className="flex-1 cursor-pointer" onClick={() => navigate(`/recruiter/applicants/${app._id}`)}>
-                  <h3 className="text-lg font-semibold text-gray-800 hover:text-emerald-600 transition-colors">
-                    {app.applicant.name}
-                  </h3>
-                  <p className="text-sm text-gray-600">{app.applicant.email}</p>
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={getFullImageUrl(app.applicant.profilePhoto) || `https://ui-avatars.com/api/?name=${app.applicant.name}&background=10b981&color=fff`}
+                      alt={app.applicant.name}
+                      className="w-12 h-12 rounded-full object-cover border border-gray-200"
+                    />
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-800 hover:text-emerald-600 transition-colors">
+                        {app.applicant.name}
+                      </h3>
+                      <p className="text-sm text-gray-600">{app.applicant.email}</p>
+                    </div>
+                  </div>
                   {app.coverLetter && (
                     <div className="mt-2 p-2 bg-gray-50 rounded">
                       <p className="text-sm text-gray-700"><strong>Cover Letter:</strong> {app.coverLetter}</p>
@@ -128,7 +138,7 @@ const Applicants = () => {
                   </button>
 
                   <a
-                    href={app.resumeURL ? (app.resumeURL.startsWith('http') ? app.resumeURL : `http://localhost:5000${app.resumeURL}`) : '#'}
+                    href={getFullImageUrl(app.resumeURL) || '#'}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`px-3 py-1.5 text-xs bg-emerald-600 text-white rounded hover:bg-emerald-700${!app.resumeURL ? ' opacity-50 pointer-events-none' : ''}`}

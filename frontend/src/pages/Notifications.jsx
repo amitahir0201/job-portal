@@ -4,10 +4,9 @@ import { useNavigate } from 'react-router-dom';
 import SeekerHeader from '../components/SeekerHeader';
 import NotificationTabs from '../components/NotificationTabs';
 import NotificationCard from '../components/NotificationCard';
-import { AlertCircle, Loader, Bell, CheckCircle } from 'lucide-react';
+import { AlertCircle, Loader, Bell, CheckCircle, Briefcase } from 'lucide-react';
 import api from '../services/api';
 
-// Demo notifications data
 const DUMMY_NOTIFICATIONS = [
   {
     _id: 'notif1',
@@ -54,33 +53,6 @@ const DUMMY_NOTIFICATIONS = [
     isRead: true,
     createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString(),
   },
-  {
-    _id: 'notif6',
-    type: 'system',
-    title: 'Profile Completion',
-    message: 'Complete your profile to increase your chances of getting hired.',
-    relatedId: null,
-    isRead: true,
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    _id: 'notif7',
-    type: 'interview',
-    title: 'Interview Reminder',
-    message: 'Reminder: Your interview with DataCore Systems is tomorrow at 10:00 AM.',
-    relatedId: 'app4',
-    isRead: false,
-    createdAt: new Date(Date.now() - 18 * 60 * 60 * 1000).toISOString(),
-  },
-  {
-    _id: 'notif8',
-    type: 'job',
-    title: 'Trending Job Posted',
-    message: 'Node.js Backend Developer position is trending in your area.',
-    relatedId: 'job2',
-    isRead: true,
-    createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-  },
 ];
 
 const Notifications = () => {
@@ -101,7 +73,6 @@ const Notifications = () => {
       setLoading(true);
       setError(null);
       const response = await api.get('/notifications');
-
       if (response.data.success && Array.isArray(response.data.notifications)) {
         setNotifications(response.data.notifications);
         setUseDummy(false);
@@ -110,7 +81,6 @@ const Notifications = () => {
         setNotifications(DUMMY_NOTIFICATIONS);
       }
     } catch (err) {
-      console.error('Error fetching notifications:', err);
       setError('Failed to fetch notifications');
       setUseDummy(true);
       setNotifications(DUMMY_NOTIFICATIONS);
@@ -128,177 +98,156 @@ const Notifications = () => {
   const totalCount = notifications.length;
 
   const handleMarkAsRead = async (notificationId) => {
-    // Optimistic update
     setNotifications((prev) =>
-      prev.map((n) =>
-        n._id === notificationId ? { ...n, isRead: true } : n
-      )
+      prev.map((n) => (n._id === notificationId ? { ...n, isRead: true } : n))
     );
-
-    // API call
     try {
       await api.post(`/notifications/${notificationId}/read`);
     } catch (err) {
-      console.error('Error marking notification as read:', err);
-      // Revert on error
-      setNotifications((prev) =>
-        prev.map((n) =>
-          n._id === notificationId ? { ...n, isRead: false } : n
-        )
-      );
+      fetchNotifications();
     }
   };
 
   const handleMarkAllAsRead = async () => {
-    // Optimistic update
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-
     try {
       await api.post('/notifications/mark-all-read');
     } catch (err) {
-      console.error('Error marking all as read:', err);
-      // Revert on error
       fetchNotifications();
     }
   };
 
   const handleNotificationClick = (notification) => {
-    // Mark as read
     handleMarkAsRead(notification._id);
-
-    // Navigate based on type
-    if (notification.type === 'application') {
-      navigate('/applications');
-    } else if (notification.type === 'interview') {
-      navigate('/applications');
-    } else if (notification.type === 'message') {
-      navigate('/messages');
-    } else if (notification.type === 'job') {
-      navigate(`/job-details/${notification.relatedId}`);
-    }
+    if (notification.type === 'application' || notification.type === 'interview') navigate('/applications');
+    else if (notification.type === 'message') navigate('/messages');
+    else if (notification.type === 'job') navigate(`/job-details/${notification.relatedId}`);
   };
 
   return (
-    <>
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       <SeekerHeader />
-      <div className="min-h-screen bg-gray-50 py-8 px-4">
-        <div className="max-w-4xl mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <div className="flex items-start justify-between mb-4">
-              <div>
-                <h1 className="text-4xl font-bold text-gray-900 mb-2">Notifications</h1>
-                <p className="text-gray-600">Stay updated with your job activities</p>
-              </div>
-              {unreadCount > 0 && (
-                <div className="flex items-center gap-3">
-                  <span className="inline-block px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full font-bold text-sm">
-                    {unreadCount} Unread
-                  </span>
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={handleMarkAllAsRead}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition flex items-center gap-2"
-                    >
-                      <CheckCircle size={18} />
-                      Mark All as Read
-                    </button>
-                  )}
-                </div>
-              )}
+      
+      <main className="w-full max-w-4xl mx-auto px-4 py-6 sm:py-10">
+        {/* Header Section: Corrected for overflow */}
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-2xl sm:text-4xl font-bold text-gray-900 truncate">
+                Notifications
+              </h1>
+              <p className="text-sm sm:text-base text-gray-500 mt-1">
+                Stay updated with your job activities
+              </p>
             </div>
-            <p className="text-sm text-gray-500">
-              Total Notifications: <span className="font-bold text-gray-900">{totalCount}</span>
-            </p>
-          </div>
 
-          {/* Demo Notice */}
-          {useDummy && (
-            <div className="mb-6 flex items-start gap-4 p-4 bg-blue-50 border border-blue-200 rounded-xl">
-              <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-              <div className="flex-1">
-                <h3 className="font-bold text-blue-900 mb-1">Demo Data</h3>
-                <p className="text-blue-700 text-sm mb-3">
-                  Showing sample notifications for demonstration. Connect to backend API to load real notifications.
-                </p>
+            {unreadCount > 0 && (
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                <span className="inline-flex items-center px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full font-bold text-xs sm:text-sm">
+                  {unreadCount} Unread
+                </span>
                 <button
-                  onClick={() => {
-                    setNotifications(DUMMY_NOTIFICATIONS);
-                    setUseDummy(true);
-                  }}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition text-sm"
+                  onClick={handleMarkAllAsRead}
+                  className="flex items-center gap-2 px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs sm:text-sm font-bold transition-all shadow-sm active:scale-95"
                 >
-                  📊 Load Demo Data
+                  <CheckCircle size={16} />
+                  <span className="whitespace-nowrap">Mark All Read</span>
                 </button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
+          
+          <div className="mt-4 flex items-center gap-2">
+            <div className="h-px flex-1 bg-gray-200"></div>
+            <span className="text-[10px] sm:text-xs font-semibold uppercase text-gray-400 tracking-wider whitespace-nowrap">
+              Total: {totalCount}
+            </span>
+            <div className="h-px flex-1 bg-gray-200"></div>
+          </div>
+        </div>
 
-          {/* Error State */}
-          {error && !useDummy && (
-            <div className="mb-6 flex items-start gap-4 p-4 bg-red-50 border border-red-200 rounded-xl">
-              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-              <div>
-                <h3 className="font-bold text-red-900 mb-1">Error</h3>
-                <p className="text-red-700 text-sm">{error}</p>
+        {/* Alerts Container */}
+        <div className="space-y-3 mb-6">
+          {useDummy && (
+            <div className="flex items-start gap-3 p-3 sm:p-4 bg-blue-50 border border-blue-100 rounded-xl">
+              <AlertCircle className="w-5 h-5 text-blue-600 flex-shrink-0" />
+              <div className="min-w-0">
+                <h3 className="font-bold text-blue-900 text-sm">Demo Mode</h3>
+                <p className="text-blue-700 text-xs mt-0.5 leading-relaxed">
+                  Showing sample notifications. Connect your API for real-time updates.
+                </p>
               </div>
             </div>
           )}
 
-          {/* Loading State */}
+          {error && !useDummy && (
+            <div className="flex items-start gap-3 p-3 bg-red-50 border border-red-100 rounded-xl">
+              <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
+              <p className="text-red-700 text-xs sm:text-sm font-medium">{error}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Content Section */}
+        <div className="w-full">
           {loading ? (
-            <div className="flex flex-col items-center justify-center py-12">
-              <Loader className="w-8 h-8 text-emerald-600 animate-spin mb-4" />
-              <p className="text-gray-600 font-medium">Loading notifications...</p>
+            <div className="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-gray-100 shadow-sm">
+              <Loader className="w-8 h-8 text-emerald-600 animate-spin mb-3" />
+              <p className="text-gray-500 text-sm font-medium">Syncing notifications...</p>
             </div>
           ) : notifications.length === 0 ? (
-            /* Empty State */
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-              <div className="inline-block p-3 bg-gray-100 rounded-full mb-4">
-                <Bell className="w-8 h-8 text-gray-400" />
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8 sm:p-12 text-center">
+              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Bell className="w-8 h-8 text-gray-300" />
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">No Notifications Yet</h3>
-              <p className="text-gray-600 mb-6">You're all caught up! Start applying to jobs to get notifications.</p>
-              <a
-                href="/jobs"
-                className="inline-block px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition"
+              <h3 className="text-lg font-bold text-gray-900">No Notifications Yet</h3>
+              <p className="text-gray-500 text-sm mt-2 mb-6 max-w-[250px] mx-auto">
+                Once you start applying or receiving messages, they will appear here.
+              </p>
+              <button
+                onClick={() => navigate('/jobs')}
+                className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold transition text-sm"
               >
-                Browse Jobs
-              </a>
+                <Briefcase size={16} />
+                Explore Jobs
+              </button>
             </div>
           ) : (
-            <>
-              {/* Filter Tabs */}
-              <NotificationTabs
-                activeFilter={activeFilter}
-                setActiveFilter={setActiveFilter}
-                notifications={notifications}
-              />
+            <div className="space-y-5">
+              {/* Tab Navigation Wrapper */}
+              <div className="w-full overflow-hidden">
+                <NotificationTabs
+                  activeFilter={activeFilter}
+                  setActiveFilter={setActiveFilter}
+                  notifications={notifications}
+                />
+              </div>
 
-              {/* Notifications List */}
-              {filteredNotifications.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-                  <p className="text-gray-600">No {activeFilter} notifications</p>
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  {filteredNotifications.map((notification) => (
+              {/* List Container */}
+              <div className="space-y-3 pb-10">
+                {filteredNotifications.length === 0 ? (
+                  <div className="bg-white rounded-xl border border-dashed border-gray-200 p-10 text-center">
+                    <p className="text-gray-400 text-sm italic">
+                      No {activeFilter} updates found
+                    </p>
+                  </div>
+                ) : (
+                  filteredNotifications.map((notification) => (
                     <NotificationCard
                       key={notification._id}
                       notification={notification}
                       onClick={() => handleNotificationClick(notification)}
                       onMarkAsRead={() => handleMarkAsRead(notification._id)}
                     />
-                  ))}
-                </div>
-              )}
-            </>
+                  ))
+                )}
+              </div>
+            </div>
           )}
         </div>
-      </div>
-    </>
+      </main>
+    </div>
   );
 };
 
 export default Notifications;
-

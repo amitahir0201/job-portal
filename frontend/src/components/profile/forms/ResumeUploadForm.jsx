@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Upload, File } from 'lucide-react';
+import { getFullImageUrl } from '../../../utils/imageUtils';
+import api from '../../../services/api';
 
 const ResumeUploadForm = ({ profile, onUpdate, submitting }) => {
   const [resumeFile, setResumeFile] = useState(null);
@@ -9,7 +11,7 @@ const ResumeUploadForm = ({ profile, onUpdate, submitting }) => {
     const file = e.target.files[0];
     if (file && file.type === 'application/pdf') {
       setResumeFile(file);
-      // Create a preview URL
+      // Create a preview URL for UI only, don't save this to backend
       const url = URL.createObjectURL(file);
       setResumeURL(url);
     } else {
@@ -17,12 +19,25 @@ const ResumeUploadForm = ({ profile, onUpdate, submitting }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (resumeFile) {
-      // In a real application, you would upload the file and get the URL
-      // For now, we'll use the object URL
-      onUpdate({ resumeURL: resumeURL || profile.resumeURL });
+      try {
+        const formData = new FormData();
+        formData.append('resume', resumeFile);
+        
+        const res = await api.post('/profile/resume', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        
+        if (res.data.success) {
+          onUpdate({ resumeURL: res.data.resumeURL });
+          setResumeFile(null);
+        }
+      } catch (err) {
+        console.error('Error uploading resume:', err);
+        alert(err.response?.data?.message || 'Failed to upload resume');
+      }
     }
   };
 
@@ -40,7 +55,7 @@ const ResumeUploadForm = ({ profile, onUpdate, submitting }) => {
                 <div>
                   <p className="font-semibold text-gray-900">Resume Uploaded</p>
                   <a
-                    href={profile.resumeURL}
+                    href={profile.resumeURL.startsWith('blob:') ? profile.resumeURL : getFullImageUrl(profile.resumeURL)}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-emerald-600 hover:underline text-sm"

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../services/api';
 import { sendResetPasswordEmail } from '../services/emailService';
 
 const ForgotPassword = () => {
@@ -34,8 +34,8 @@ const ForgotPassword = () => {
 
       // 1️⃣ Call backend to generate reset token
       console.log('[ForgotPassword] Requesting password reset for:', email);
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/auth/forgot-password`,
+      const response = await api.post(
+        '/auth/forgot-password',
         { email: email.toLowerCase().trim() }
       );
 

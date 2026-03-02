@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Upload } from 'lucide-react';
+import { getFullImageUrl } from '../../../utils/imageUtils';
+import api from '../../../services/api';
 
 const BasicInfoForm = ({ profile, onUpdate, submitting }) => {
   const [formData, setFormData] = useState({
@@ -23,18 +25,37 @@ const BasicInfoForm = ({ profile, onUpdate, submitting }) => {
     const file = e.target.files[0];
     if (file) {
       setPhotoFile(file);
-      // Create preview
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, profilePhoto: reader.result }));
-      };
-      reader.readAsDataURL(file);
+      // Create preview using URL.createObjectURL for UI preview only
+      const previewUrl = URL.createObjectURL(file);
+      setFormData((prev) => ({ ...prev, profilePhoto: previewUrl }));
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onUpdate(formData);
+    let updatedPhotoUrl = formData.profilePhoto;
+
+    if (photoFile) {
+      try {
+        const photoFormData = new FormData();
+        photoFormData.append('photo', photoFile);
+        
+        // Use a dedicated endpoint for photo upload or handle it in updateProfile
+        // Given we have uploadPhoto in the backend now:
+        const uploadRes = await api.post('/profile/upload-photo', photoFormData, {
+          headers: { 'Content-Type': 'multipart/form-data' }
+        });
+        
+        if (uploadRes.data.success) {
+          updatedPhotoUrl = uploadRes.data.profilePhoto;
+        }
+      } catch (err) {
+        console.error('Error uploading photo:', err);
+        alert('Failed to upload photo. Saving other information.');
+      }
+    }
+
+    onUpdate({ ...formData, profilePhoto: updatedPhotoUrl });
   };
 
   return (
@@ -50,7 +71,7 @@ const BasicInfoForm = ({ profile, onUpdate, submitting }) => {
           <div className="flex items-center gap-6">
             {formData.profilePhoto && (
               <img
-                src={formData.profilePhoto}
+                src={formData.profilePhoto.startsWith('blob:') ? formData.profilePhoto : getFullImageUrl(formData.profilePhoto)}
                 alt="Profile"
                 className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
               />

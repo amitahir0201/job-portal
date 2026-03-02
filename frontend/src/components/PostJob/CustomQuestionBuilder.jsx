@@ -79,7 +79,7 @@ const CustomQuestionBuilder = ({ question, index, onChange, onRemove }) => {
             >
               <option value="text">Short Text</option>
               <option value="textarea">Long Text</option>
-              <option value="yes/no">Yes/No</option>
+              {/* <option value="yes/no">Yes/No</option> */}
               <option value="multiple-choice">Multiple Choice</option>
             </select>
             <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">

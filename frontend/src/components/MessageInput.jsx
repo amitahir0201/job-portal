@@ -104,7 +104,7 @@ const MessageInput = ({
   };
 
   return (
-    <div className="bg-white border-t border-gray-100 p-2 sm:p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
+    <div className="bg-white border-t border-gray-100 p-1.5 sm:p-4 shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
       {/* Attachment Preview - Horizontal Scroll for Mobile */}
       {attachments.length > 0 && (
         <div className="flex gap-2 overflow-x-auto pb-3 mb-2 scrollbar-hide">
@@ -137,13 +137,13 @@ const MessageInput = ({
 
       {/* Input Section */}
       <div className="flex flex-col gap-2">
-        <div className="flex items-end gap-1 sm:gap-3">
+        <div className="flex items-end gap-0.5 sm:gap-3">
           {/* Action Group */}
           <div className="flex items-center">
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled || isLoading}
-              className="p-2 sm:p-2.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors disabled:opacity-50"
+              className="p-1.5 sm:p-2.5 text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 rounded-full transition-colors disabled:opacity-50"
             >
               <Paperclip size={20} />
             </button>
@@ -191,7 +191,7 @@ const MessageInput = ({
               disabled={disabled || isLoading}
               placeholder={placeholder}
               rows="1"
-              className="w-full px-4 py-2.5 sm:py-3 bg-gray-100 focus:bg-white border-transparent focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 rounded-[22px] text-sm sm:text-base resize-none transition-all placeholder-gray-500 max-h-[120px] overflow-y-auto"
+              className="w-full px-4 py-2 sm:py-3 bg-gray-100 focus:bg-white border-transparent focus:border-emerald-500 focus:ring-4 focus:ring-emerald-500/10 rounded-[22px] text-base sm:text-base resize-none transition-all placeholder-gray-500 max-h-[120px] overflow-y-auto"
             />
           </div>
 

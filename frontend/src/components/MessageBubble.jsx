@@ -1,5 +1,6 @@
 import React from 'react';
 import { Check, CheckCheck, Clock, File, Download } from 'lucide-react';
+import { getFullImageUrl } from '../utils/imageUtils';
 
 const MessageBubble = ({ message, isSender, showTime = true }) => {
   const formatTime = (timestamp) => {
@@ -51,11 +52,8 @@ const MessageBubble = ({ message, isSender, showTime = true }) => {
         <div className="flex-shrink-0 mt-1">
           <img
             src={
-              message.senderId?.profilePhoto 
-                ? (message.senderId.profilePhoto.startsWith('http') 
-                    ? message.senderId.profilePhoto 
-                    : `http://localhost:5000${message.senderId.profilePhoto}`)
-                : `https://ui-avatars.com/api/?name=${message.senderId?.fullName || message.senderName || 'User'}&background=10b981&color=fff&size=32`
+              getFullImageUrl(message.senderId?.profilePhoto) || 
+              `https://ui-avatars.com/api/?name=${message.senderId?.fullName || message.senderName || 'User'}&background=10b981&color=fff&size=32`
             }
             alt="avatar"
             className="w-8 h-8 rounded-full object-cover"

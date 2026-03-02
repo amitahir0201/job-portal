@@ -30,11 +30,11 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
-    // Accept image files only
-    if (file.mimetype.startsWith('image/')) {
+    // Accept image files and PDF files
+    if (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') {
       cb(null, true);
     } else {
-      cb(new Error('Only image files are allowed'), false);
+      cb(new Error('Only image and PDF files are allowed'), false);
     }
   }
 });

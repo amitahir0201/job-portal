@@ -11,8 +11,16 @@ export const getFullImageUrl = (imagePath) => {
   
   // If it's already a full URL, return as-is
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-    console.log('getFullImageUrl: Already full URL:', imagePath);
+    console.log('getFullImageUrl: Already a full URL:', imagePath);
     return imagePath;
+  }
+
+  // Blob URLs are only valid in the current session and should NEVER be stored in the DB.
+  // If we encounter one here, it's almost certainly a stale reference from the DB that will cause a console error.
+  // We return null to prevent the "Not allowed to load local resource" error.
+  if (imagePath.startsWith('blob:')) {
+    console.log('getFullImageUrl: Stale blob URL detected, returning null:', imagePath);
+    return null;
   }
   
   // If it's a relative path from backend, construct full URL

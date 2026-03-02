@@ -97,7 +97,7 @@ const SeekerHeader = () => {
               <span className="text-base font-bold text-white">JH</span>
             </div>
             <span className="text-lg font-bold text-gray-900 hidden sm:inline group-hover:text-green-600 transition-colors duration-300">
-              JobHub
+              JobHubNow
             </span>
           </Link>
 

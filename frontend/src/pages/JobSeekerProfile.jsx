@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import SeekerHeader from '../components/SeekerHeader';
 import api from '../services/api';
+import { getFullImageUrl } from '../utils/imageUtils';
 
 const JobSeekerProfile = () => {
   const { userId } = useParams();
@@ -189,7 +190,7 @@ const JobSeekerProfile = () => {
               <div className="flex-shrink-0">
                 {profile.profilePhoto ? (
                   <img
-                    src={profile.profilePhoto}
+                    src={getFullImageUrl(profile.profilePhoto)}
                     alt={profile.fullName}
                     className="w-32 h-32 rounded-full border-4 border-white object-cover"
                   />
@@ -245,7 +246,7 @@ const JobSeekerProfile = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
               {profile.resumeURL && (
                 <a
-                  href={profile.resumeURL}
+                  href={getFullImageUrl(profile.resumeURL)}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center gap-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg hover:bg-emerald-100 transition-colors"

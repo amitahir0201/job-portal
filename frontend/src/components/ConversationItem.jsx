@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { MessageCircle, Search, MoreVertical } from 'lucide-react';
+import { getFullImageUrl } from '../utils/imageUtils';
 
 const ConversationItem = ({ 
   conversation, 
@@ -55,9 +56,7 @@ const ConversationItem = ({
           >
             {conversation.profile?.profilePhoto ? (
               <img 
-                src={conversation.profile.profilePhoto.startsWith('http') 
-                  ? conversation.profile.profilePhoto 
-                  : `http://localhost:5000${conversation.profile.profilePhoto}`}
+                src={getFullImageUrl(conversation.profile.profilePhoto)}
                 alt={conversation.name}
                 className="w-full h-full object-cover"
               />
