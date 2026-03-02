@@ -14,9 +14,9 @@ const ProfileHeader = ({
 
   useEffect(() => {
     // Debug logging
-    console.log('ProfileHeader image prop:', image);
+    console.log('ProfileHeader props:', { name, completionPercentage, image });
     setImageError(false); // Reset error when image prop changes
-  }, [image]);
+  }, [image, completionPercentage, name]);
 
   const handleImageError = () => {
     console.error('Image failed to load:', image);

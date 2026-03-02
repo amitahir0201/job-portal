@@ -74,9 +74,15 @@ const JobSeekerMessages = () => {
 
           // Get recruiter info from job
           if (jobData.recruiterId) {
+            const recruiterPhotoUrl = jobData.recruiterPhoto
+              ? (jobData.recruiterPhoto.startsWith('http')
+                  ? jobData.recruiterPhoto
+                  : `http://localhost:5000${jobData.recruiterPhoto}`)
+              : `https://ui-avatars.com/api/?name=${jobData.companyName || 'Recruiter'}&background=10b981&color=fff`;
+
             setRecruiter({
-              name: jobData.recruiterName || 'Recruiter',
-              profilePhoto: jobData.recruiterPhoto,
+              name: jobData.companyName || 'Recruiter',
+              profilePhoto: recruiterPhotoUrl,
               id: jobData.recruiterId,
             });
           }

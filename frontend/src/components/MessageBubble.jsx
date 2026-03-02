@@ -50,9 +50,15 @@ const MessageBubble = ({ message, isSender, showTime = true }) => {
       {!isSender && (
         <div className="flex-shrink-0 mt-1">
           <img
-            src={`https://ui-avatars.com/api/?name=${message.senderName || 'User'}&background=10b981&color=fff&size=32`}
+            src={
+              message.senderId?.profilePhoto 
+                ? (message.senderId.profilePhoto.startsWith('http') 
+                    ? message.senderId.profilePhoto 
+                    : `http://localhost:5000${message.senderId.profilePhoto}`)
+                : `https://ui-avatars.com/api/?name=${message.senderId?.fullName || message.senderName || 'User'}&background=10b981&color=fff&size=32`
+            }
             alt="avatar"
-            className="w-8 h-8 rounded-full"
+            className="w-8 h-8 rounded-full object-cover"
           />
         </div>
       )}

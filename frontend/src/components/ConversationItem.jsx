@@ -48,12 +48,22 @@ const ConversationItem = ({
         {/* Avatar with Status */}
         <div className="relative flex-shrink-0">
           <div
-            className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg transition-all ${
+            className={`w-14 h-14 rounded-full flex items-center justify-center text-white font-bold text-lg transition-all overflow-hidden ${
               isSelected ? 'bg-gradient-to-br from-emerald-600 to-teal-600 ring-2 ring-emerald-600' : 
               'bg-gradient-to-br from-emerald-500 to-teal-500'
             }`}
           >
-            {getInitials(conversation.name)}
+            {conversation.profile?.profilePhoto ? (
+              <img 
+                src={conversation.profile.profilePhoto.startsWith('http') 
+                  ? conversation.profile.profilePhoto 
+                  : `http://localhost:5000${conversation.profile.profilePhoto}`}
+                alt={conversation.name}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              getInitials(conversation.name)
+            )}
           </div>
           {conversation.isOnline && (
             <div className="absolute bottom-1 right-1 w-3.5 h-3.5 bg-green-500 rounded-full border-2 border-white shadow-md"></div>

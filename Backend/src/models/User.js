@@ -48,20 +48,43 @@ const userSchema = new mongoose.Schema(
 
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
+    profileCompletionPercentage: { type: Number, default: 0 },
   },
   { timestamps: true }
 );
 
-// Hash password before saving
+// Hash password and calculate profile completion before saving
 userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  try {
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
-    next();
-  } catch (err) {
-    next(err);
+  // Hash password
+  if (this.isModified('password')) {
+    try {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    } catch (err) {
+      return next(err);
+    }
   }
+
+  // Calculate Profile Completion Percentage
+  const fields = [
+    { name: 'fullName', weight: 10 },
+    { name: 'email', weight: 10 },
+    { name: 'phone', weight: 15 },
+    { name: 'headline', weight: 15 },
+    { name: 'summary', weight: 20 },
+    { name: 'linkedinUrl', weight: 15 },
+    { name: 'profilePhoto', weight: 15 }
+  ];
+
+  let completedWeight = 0;
+  fields.forEach(field => {
+    if (this[field.name] && (Array.isArray(this[field.name]) ? this[field.name].length > 0 : true)) {
+      completedWeight += field.weight;
+    }
+  });
+
+  this.profileCompletionPercentage = completedWeight;
+  next();
 });
 
 // Compare password method

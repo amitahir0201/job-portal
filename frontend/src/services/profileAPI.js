@@ -4,6 +4,7 @@ const normalizeRecruiterProfile = (profile) => {
   if (!profile) return profile;
   return {
     ...profile,
+    profileCompletionPercentage: profile.profileCompletionPercentage || 0,
     designation: profile.designation || profile.headline || 'HR Manager',
     bio: profile.bio || profile.summary || '',
     linkedinLink: profile.linkedinLink || profile.linkedinUrl || '',
@@ -59,11 +60,6 @@ export const companyProfileAPI = {
 
   // Update company profile
   updateProfile: async (formData) => {
-    const response = await api.post('/profile/company', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
-    return response.data;
+    return await companyProfileAPI.createProfile(formData);
   },
 };

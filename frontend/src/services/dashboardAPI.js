@@ -60,8 +60,8 @@ export const dashboardAPI = {
         applications.forEach(app => {
           allApplicants.push({
             _id: app._id,
-            name: app.applicant?.name || 'Unknown',
-            email: app.applicant?.email || '',
+            fullName: app.fullName || app.applicant?.fullName || 'Unknown',
+            email: app.email || app.applicant?.email || '',
             jobTitle: jobs[index]?.title || '',
             status: app.status || 'New',
             appliedDate: app.createdAt || new Date(),
@@ -130,6 +130,27 @@ export const dashboardAPI = {
       return {
         success: false,
         message: error.response?.data?.message || 'Failed to close job',
+      };
+    }
+  },
+  
+  // Schedule interview
+  scheduleInterview: async (applicantId, { interviewDate, interviewMessage }) => {
+    try {
+      const response = await api.patch(`/applications/${applicantId}/schedule-interview`, {
+        interviewDate,
+        interviewMessage,
+      });
+      return {
+        success: true,
+        message: 'Interview scheduled successfully',
+        application: response.data.application,
+      };
+    } catch (error) {
+      console.error('Error scheduling interview:', error);
+      return {
+        success: false,
+        message: error.response?.data?.message || 'Failed to schedule interview',
       };
     }
   },

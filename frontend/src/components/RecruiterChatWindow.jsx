@@ -45,8 +45,11 @@ const RecruiterChatWindow = ({
             <div className="relative flex-shrink-0">
               <img
                 src={
-                  conversation.profile?.profilePhoto ||
-                  `https://ui-avatars.com/api/?name=${conversation.name}&background=10b981&color=fff`
+                  conversation.profile?.profilePhoto 
+                    ? (conversation.profile.profilePhoto.startsWith('http') 
+                        ? conversation.profile.profilePhoto 
+                        : `http://localhost:5000${conversation.profile.profilePhoto}`)
+                    : `https://ui-avatars.com/api/?name=${conversation.name}&background=10b981&color=fff`
                 }
                 alt={conversation.name}
                 className="w-11 h-11 rounded-full object-cover border-2 border-emerald-100"

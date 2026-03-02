@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ChevronDown, ChevronRight, Mail, Calendar, FileText, UserCheck } from 'lucide-react';
+import { ChevronDown, ChevronRight, Mail, Calendar, FileText, UserCheck, X, Clock, MessageSquare } from 'lucide-react';
 
 /**
  * ApplicantsTable Component
@@ -8,9 +8,16 @@ import { ChevronDown, ChevronRight, Mail, Calendar, FileText, UserCheck } from '
 const ApplicantsTable = ({ 
   applicants = [], 
   loading = false,
-  onStatusChange = null 
+  onStatusChange = null,
+  onScheduleInterview = null
 }) => {
   const [expandedApplicant, setExpandedApplicant] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedApp, setSelectedApp] = useState(null);
+  const [interviewDate, setInterviewDate] = useState('');
+  const [interviewTime, setInterviewTime] = useState('');
+  const [interviewMessage, setInterviewMessage] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const statusOptions = [
     'New',
@@ -31,6 +38,63 @@ const ApplicantsTable = ({
       'Hired': 'bg-emerald-100 text-emerald-800 border-emerald-200',
     };
     return statusColors[status] || 'bg-gray-100 text-gray-800 border-gray-200';
+  };
+
+  const handleOpenInterviewModal = (e, applicant) => {
+    e.stopPropagation();
+    setSelectedApp(applicant);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedApp(null);
+    setInterviewDate('');
+    setInterviewTime('');
+    setInterviewMessage('');
+  };
+
+  const handleSubmitInterview = async (e) => {
+    e.preventDefault();
+    if (!onScheduleInterview || !selectedApp) return;
+
+    setIsSubmitting(true);
+    const success = await onScheduleInterview(selectedApp._id, {
+      interviewDate: `${interviewDate}T${interviewTime}`,
+      interviewMessage
+    });
+    setIsSubmitting(false);
+
+    if (success) {
+      handleCloseModal();
+    }
+  };
+
+  const handleViewResume = (e, resumeUrl) => {
+    e.stopPropagation();
+    if (!resumeUrl) {
+      alert("No resume uploaded for this applicant.");
+      return;
+    }
+    
+    const getBaseUrl = () => {
+      if (import.meta.env.VITE_API_URL) {
+        return import.meta.env.VITE_API_URL.replace('/api', '');
+      }
+      return 'http://localhost:5000';
+    };
+
+    const baseUrl = getBaseUrl();
+    // Ensure resumeUrl starts with / if it's a relative path
+    const cleanPath = resumeUrl.startsWith('http') ? resumeUrl : (resumeUrl.startsWith('/') ? resumeUrl : `/${resumeUrl}`);
+    
+    if (cleanPath.startsWith('http')) {
+      window.open(cleanPath, '_blank');
+    } else {
+      // Use URL constructor to handle slashes correctly
+      const url = new URL(cleanPath, baseUrl);
+      window.open(url.toString(), '_blank');
+    }
   };
 
   if (loading) {
@@ -70,7 +134,6 @@ const ApplicantsTable = ({
           >
             <div className="flex-1 min-w-0">
               <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                {/* FIXED: Using applicant.fullName with a string fallback */}
                 <h3 className="font-bold text-gray-900 truncate">
                   {applicant.fullName || "Job Seeker"}
                 </h3>
@@ -128,12 +191,18 @@ const ApplicantsTable = ({
                   </div>
                   
                   <div className="flex flex-wrap gap-2">
-                    <button className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 transition-colors shadow-sm">
+                    <button 
+                      onClick={(e) => handleOpenInterviewModal(e, applicant)}
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-lg hover:bg-emerald-700 transition-colors shadow-sm"
+                    >
                       <Calendar size={16} />
                       <span>Interview</span>
                     </button>
                     
-                    <button className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-50 transition-colors">
+                    <button 
+                      onClick={(e) => handleViewResume(e, applicant.resumeUrl)}
+                      className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-lg hover:bg-gray-50 transition-colors"
+                    >
                       <FileText size={16} />
                       <span>Resume</span>
                     </button>
@@ -144,6 +213,91 @@ const ApplicantsTable = ({
           )}
         </div>
       ))}
+
+      {/* Interview Scheduling Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
+            <div className="px-6 py-4 bg-emerald-600 flex items-center justify-between">
+              <h3 className="text-white font-bold text-lg">Schedule Interview</h3>
+              <button onClick={handleCloseModal} className="text-emerald-100 hover:text-white transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleSubmitInterview} className="p-6 space-y-5">
+              <div className="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                <div className="w-10 h-10 rounded-full bg-emerald-200 flex items-center justify-center text-emerald-700 font-bold">
+                  {selectedApp?.fullName?.charAt(0) || 'J'}
+                </div>
+                <div>
+                  <p className="text-sm font-bold text-emerald-900">{selectedApp?.fullName}</p>
+                  <p className="text-xs text-emerald-600">{selectedApp?.jobTitle}</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider flex items-center gap-1.5">
+                      <Calendar size={12} /> Date
+                    </label>
+                    <input 
+                      type="date" 
+                      required
+                      value={interviewDate}
+                      onChange={(e) => setInterviewDate(e.target.value)}
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider flex items-center gap-1.5">
+                      <Clock size={12} /> Time
+                    </label>
+                    <input 
+                      type="time" 
+                      required
+                      value={interviewTime}
+                      onChange={(e) => setInterviewTime(e.target.value)}
+                      className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-[10px] uppercase font-bold text-gray-400 tracking-wider flex items-center gap-1.5">
+                    <MessageSquare size={12} /> Instructions / Message
+                  </label>
+                  <textarea 
+                    rows="3"
+                    value={interviewMessage}
+                    onChange={(e) => setInterviewMessage(e.target.value)}
+                    placeholder="Provide zoom link or location details..."
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-emerald-500 outline-none resize-none"
+                  ></textarea>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button 
+                  type="button"
+                  onClick={handleCloseModal}
+                  className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-600 text-sm font-bold rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="flex-1 px-4 py-2.5 bg-emerald-600 text-white text-sm font-bold rounded-xl hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-200 disabled:opacity-50"
+                >
+                  {isSubmitting ? 'Scheduling...' : 'Confirm Session'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

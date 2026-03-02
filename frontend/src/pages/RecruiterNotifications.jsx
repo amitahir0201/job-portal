@@ -113,7 +113,17 @@ const RecruiterNotifications = () => {
                 <NotificationCard 
                   key={n._id} 
                   notification={n} 
-                  onClick={() => navigate(`/recruiter/applications/${n.relatedId}`)}
+                  onClick={() => {
+                    handleMarkAsRead(n._id);
+                    if (n.type === 'message') {
+                      navigate('/messages');
+                    } else if (n.type === 'application') {
+                      // Navigate to dashboard or a specific application view if available
+                      navigate('/recruiter');
+                    } else {
+                      navigate('/recruiter');
+                    }
+                  }}
                   onMarkAsRead={() => handleMarkAsRead(n._id)}
                 />
               ))}

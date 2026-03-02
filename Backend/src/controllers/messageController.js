@@ -23,6 +23,16 @@ exports.sendMessage = async (req, res) => {
       status: 'sent'
     });
 
+    // Notify receiver
+    const Notification = require('../models/Notification');
+    await Notification.create({
+      user: receiverId,
+      type: 'message',
+      title: 'New Message Received',
+      message: `You have received a new message from ${req.user.fullName || 'a user'}${jobId ? ' regarding a job' : ''}.`,
+      relatedId: msg._id
+    });
+
     res.status(201).json({ success: true, message: msg });
 
   } catch (error) {
@@ -64,9 +74,10 @@ exports.listConversations = async (req, res) => {
       const key = counterpart._id.toString();
 
       if (!map.has(key)) {
+        const name = counterpart.fullName || counterpart.name || 'User';
         map.set(key, {
           id: key,
-          name: counterpart.fullName || counterpart.name || 'User',
+          name: name,
           profile: { profilePhoto: counterpart.profilePhoto || null },
           jobTitle: m.jobId?.title || '',
           lastMessage: m.text || '',
@@ -102,7 +113,9 @@ exports.getConversationMessages = async (req, res) => {
         { senderId: userId, receiverId: otherId },
         { senderId: otherId, receiverId: userId },
       ]
-    }).sort({ createdAt: 1 });
+    })
+    .sort({ createdAt: 1 })
+    .populate('senderId', 'fullName profilePhoto');
 
     res.json({ success: true, messages: msgs });
 
@@ -118,7 +131,9 @@ exports.getMessagesByJob = async (req, res) => {
   try {
     const jobId = req.params.jobId;
 
-    const msgs = await Message.find({ jobId }).sort({ createdAt: 1 });
+    const msgs = await Message.find({ jobId })
+      .sort({ createdAt: 1 })
+      .populate('senderId', 'fullName profilePhoto');
 
     res.json({ success: true, messages: msgs });
 

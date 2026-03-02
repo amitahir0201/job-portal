@@ -83,6 +83,24 @@ exports.createJob = async (req, res) => {
 
     const job = await Job.create(payload);
 
+    // Notify seekers if job is Active
+    if (job.status === 'Active') {
+      const Notification = require('../models/Notification');
+      const seekers = await User.find({ role: { $in: ['jobseeker', 'seeker'] } });
+      
+      const notifications = seekers.map(seeker => ({
+        user: seeker._id,
+        type: 'job',
+        title: 'New Job Posted',
+        message: `A new job "${job.title}" has been posted by ${payload.companyName || 'a company'}.`,
+        relatedId: job._id
+      }));
+
+      if (notifications.length > 0) {
+        await Notification.insertMany(notifications);
+      }
+    }
+
     res.json({ success: true, job: serializeJob(job) });
   } catch (error) {
     console.error("createJob error:", error);

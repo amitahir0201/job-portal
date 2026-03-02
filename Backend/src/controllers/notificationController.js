@@ -1,14 +1,49 @@
 const Notification = require('../models/Notification');
+const User = require('../models/User');
+const Job = require('../models/Job');
 
 // @desc    Get all notifications for a Seeker (Default list)
 // @route   GET /api/notifications
 exports.listNotifications = async (req, res) => {
   try {
-    const notes = await Notification.find({ user: req.user._id })
+    const userId = req.user._id;
+
+    // --- Dynamic Deadline Check ---
+    const user = await User.findById(userId).populate('savedJobs');
+    if (user && user.savedJobs && user.savedJobs.length > 0) {
+      const now = new Date();
+      const threeDaysFromNow = new Date(now.getTime() + 3 * 24 * 60 * 60 * 1000);
+
+      for (const job of user.savedJobs) {
+        if (job.applicationDeadline && job.applicationDeadline > now && job.applicationDeadline <= threeDaysFromNow) {
+          // Check if we already notified about this job deadline recently
+          const existingNote = await Notification.findOne({
+            user: userId,
+            type: 'job',
+            relatedId: job._id.toString(),
+            title: 'Job Deadline Approaching'
+          });
+
+          if (!existingNote) {
+            await Notification.create({
+              user: userId,
+              type: 'job',
+              title: 'Job Deadline Approaching',
+              message: `The application deadline for your saved job "${job.title}" is on ${job.applicationDeadline.toLocaleDateString()}. Don't forget to apply!`,
+              relatedId: job._id.toString()
+            });
+          }
+        }
+      }
+    }
+    // --- End Deadline Check ---
+
+    const notes = await Notification.find({ user: userId })
       .sort({ createdAt: -1 })
       .limit(200);
     res.json({ success: true, notifications: notes });
   } catch (error) {
+    console.error("listNotifications error:", error);
     res.status(500).json({ success: false, message: error.message });
   }
 };

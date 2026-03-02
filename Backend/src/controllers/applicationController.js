@@ -1,5 +1,6 @@
 const Application = require('../models/Application');
 const Job = require('../models/Job');
+const Notification = require('../models/Notification');
 
 // POST /api/applications/apply
 exports.apply = async (req, res) => {
@@ -21,9 +22,8 @@ exports.apply = async (req, res) => {
     const applicantId = req.user?._id || null;
 
     // Get resume file path or URL
-    let resumeURL = null;
+    let resumeURL = req.body.resumeURL || null;
     if (req.file) {
-      // If file was uploaded, create path or URL
       resumeURL = `/uploads/resumes/${req.file.filename}`;
     }
 
@@ -50,8 +50,18 @@ exports.apply = async (req, res) => {
 
     await application.save();
 
-    // increment job applicationsCount
-    await Job.findByIdAndUpdate(jobId, { $inc: { applicationsCount: 1 } });
+    // increment job applicationsCount and notify recruiter
+    const job = await Job.findByIdAndUpdate(jobId, { $inc: { applicationsCount: 1 } }, { new: true });
+    
+    if (job && job.postedBy) {
+      await Notification.create({
+        user: job.postedBy,
+        type: 'application',
+        title: 'New Application Received',
+        message: `${fullName || 'An applicant'} has applied for your job "${job.title}".`,
+        relatedId: application._id
+      });
+    }
 
     res.json({ success: true, application });
   } catch (error) {
@@ -80,23 +90,71 @@ exports.getApplication = async (req, res) => {
 
 exports.updateStatus = async (req, res) => {
   const { status } = req.body;
-  const app = await Application.findById(req.params.id);
+  const app = await Application.findById(req.params.id).populate('applicant');
   if (!app) return res.status(404).json({ success: false, message: 'Not found' });
+  
+  // Ensure fullName and email are present to satisfy validation if they missing
+  if (!app.fullName && app.applicant) app.fullName = app.applicant.fullName || app.applicant.name;
+  if (!app.email && app.applicant) app.email = app.applicant.email;
+
   app.status = status;
   app.updatedAt = new Date();
   await app.save();
+
+  // Notify applicant
+  const job = await Job.findById(app.job);
+  await Notification.create({
+    user: app.applicant,
+    type: 'application',
+    title: 'Application Status Updated',
+    message: `Your application for "${job?.title || 'a job'}" has been updated to: ${status}.`,
+    relatedId: app._id
+  });
+
   res.json({ success: true, application: app });
 };
 
 exports.scheduleInterview = async (req, res) => {
   const { interviewDate, interviewMessage } = req.body;
-  const app = await Application.findById(req.params.id);
+  const app = await Application.findById(req.params.id).populate('applicant');
   if (!app) return res.status(404).json({ success: false });
+
+  // Ensure fullName and email are present to satisfy validation if they missing
+  if (!app.fullName && app.applicant) app.fullName = app.applicant.fullName || app.applicant.name;
+  if (!app.email && app.applicant) app.email = app.applicant.email;
+
   app.status = 'Interview Scheduled';
   app.interviewScheduledAt = interviewDate;
   app.interviewMessage = interviewMessage;
   app.updatedAt = new Date();
-  await app.save();
+  
+  try {
+    await app.save();
+  } catch (err) {
+    console.error('DEBUG: Save failed! Error detail:', err);
+    if (err.errors) {
+      Object.keys(err.errors).forEach(key => {
+        console.error(`Field "${key}" error:`, err.errors[key].message);
+      });
+    }
+    throw err;
+  }
+
+  // Notify applicant
+  const job = await Job.findById(app.job);
+  const formattedDate = new Date(interviewDate).toLocaleString([], {
+    dateStyle: 'full',
+    timeStyle: 'short',
+  });
+
+  await Notification.create({
+    user: app.applicant,
+    type: 'interview',
+    title: 'Interview Scheduled',
+    message: `An interview for "${job?.title || 'a job'}" has been scheduled for ${formattedDate}.`,
+    relatedId: app._id,
+  });
+
   res.json({ success: true, application: app });
 };
 
@@ -108,6 +166,17 @@ exports.rejectApplication = async (req, res) => {
   app.notes = rejectionReason;
   app.updatedAt = new Date();
   await app.save();
+
+  // Notify applicant
+  const job = await Job.findById(app.job);
+  await Notification.create({
+    user: app.applicant,
+    type: 'application',
+    title: 'Application Update',
+    message: `We're sorry, but your application for "${job?.title || 'a job'}" has been rejected.`,
+    relatedId: app._id
+  });
+
   res.json({ success: true, application: app });
 };
 
@@ -119,5 +188,18 @@ exports.withdraw = async (req, res) => {
   app.status = 'Withdrawn';
   app.updatedAt = new Date();
   await app.save();
+
+  // Notify recruiter
+  const job = await Job.findById(app.job);
+  if (job && job.postedBy) {
+    await Notification.create({
+      user: job.postedBy,
+      type: 'application',
+      title: 'Application Withdrawn',
+      message: `${req.user.fullName || 'An applicant'} has withdrawn their application for "${job.title}".`,
+      relatedId: app._id
+    });
+  }
+
   res.json({ success: true });
 };

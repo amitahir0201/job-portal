@@ -87,6 +87,25 @@ const RecruiterDashboard = () => {
     }
   };
 
+  // Handle Interview Scheduling
+  const handleScheduleInterview = async (applicantId, data) => {
+    try {
+      const result = await dashboardAPI.scheduleInterview(applicantId, data);
+      if (result.success) {
+        setApplicants((prev) =>
+          prev.map((a) =>
+            a._id === applicantId ? { ...a, status: 'Interview Scheduled' } : a
+          )
+        );
+        return true;
+      }
+      return false;
+    } catch (err) {
+      console.error('Failed to schedule interview:', err);
+      return false;
+    }
+  };
+
   // Handle Close Job
   const handleCloseJob = async (jobId) => {
     if (!confirm('Are you sure you want to close this job?')) return;
@@ -215,6 +234,7 @@ const RecruiterDashboard = () => {
           <ApplicantsTable
             applicants={applicants.slice(0, 5)}
             onStatusChange={handleApplicantStatusChange}
+            onScheduleInterview={handleScheduleInterview}
           />
         </div>
       </div>

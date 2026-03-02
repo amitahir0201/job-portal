@@ -10,7 +10,7 @@ const DUMMY_PROFILE = {
   githubLink: 'https://github.com/johndoe',
   portfolioLink: 'https://johndoe.dev',
   majorProjectLink: 'https://github.com/johndoe/awesome-project',
-  resumeUrl: 'https://johndoe.s3.amazonaws.com/resume.pdf',
+  resumeURL: 'https://amitahir.verce.app/resume.pdf',
 };
 
 const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
@@ -26,6 +26,7 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
     portfolioLink: '',
     majorProjectLink: '',
     customAnswers: {},
+    useProfileResume: false,
   });
 
   const [errors, setErrors] = useState({});
@@ -70,6 +71,7 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
       email: profileData.email || '',
       phone: profileData.phone || '',
       resumeFile: null,
+      useProfileResume: !!profileData.resumeURL,
       coverLetter: '',
       linkedinLink: profileData.linkedinLink || '',
       githubLink: profileData.githubLink || '',
@@ -85,7 +87,7 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
     if (!formData.fullName.trim()) newErrors.fullName = 'Full name is required';
     if (!formData.email.trim()) newErrors.email = 'Email is required';
     if (!formData.phone.trim()) newErrors.phone = 'Phone is required';
-    if (!formData.resumeFile) newErrors.resumeFile = 'Resume PDF is required';
+    if (!formData.useProfileResume && !formData.resumeFile) newErrors.resumeFile = 'Resume PDF is required';
 
     // Check required links
     if (job?.requiredLinks?.linkedin?.required && !formData.linkedinLink.trim()) {
@@ -128,6 +130,8 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
       submitData.append('phone', formData.phone);
       if (formData.resumeFile) {
         submitData.append('resume', formData.resumeFile);
+      } else if (formData.useProfileResume && profile.resumeURL) {
+        submitData.append('resumeURL', profile.resumeURL);
       }
       submitData.append('coverLetter', formData.coverLetter);
       submitData.append('linkedinLink', formData.linkedinLink);
@@ -267,36 +271,81 @@ const ApplyJobModal = ({ job, isOpen, onClose, onSuccess }) => {
               </div>
             </div>
 
-            {/* Resume File Upload */}
-            <div className="space-y-2">
+            {/* Resume Selection */}
+            <div className="space-y-3">
               <label className="block text-xs sm:text-sm font-bold text-gray-900">
-                Resume (PDF) <span className="text-red-600">*</span>
+                Resume <span className="text-red-600">*</span>
               </label>
-              <div className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition ${
-                errors.resumeFile ? 'border-red-300 bg-red-50' : 'border-emerald-300 bg-emerald-50 hover:border-emerald-400'
-              }`}>
-                <input
-                  type="file"
-                  accept=".pdf"
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file && file.type === 'application/pdf') {
-                      setFormData({ ...formData, resumeFile: file });
-                      setErrors({ ...errors, resumeFile: null });
-                    } else if (file) {
-                      setErrors({ ...errors, resumeFile: 'Please upload a valid PDF file' });
-                    }
-                  }}
-                  className="hidden"
-                  id="resume-upload"
-                />
-                <label htmlFor="resume-upload" className="cursor-pointer block">
-                  <p className="text-sm font-semibold text-emerald-700 mb-1">
-                    {formData.resumeFile ? `✓ ${formData.resumeFile.name}` : 'Click to upload or drag and drop'}
-                  </p>
-                  <p className="text-xs text-gray-600">PDF file only (Max 5MB)</p>
-                </label>
-              </div>
+
+              {profile.resumeURL && (
+                <div className="flex gap-4 mb-3">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="resumeType"
+                      checked={formData.useProfileResume}
+                      onChange={() => setFormData({ ...formData, useProfileResume: true, resumeFile: null })}
+                      className="w-4 h-4 text-emerald-600 focus:ring-emerald-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Use Profile Resume</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      name="resumeType"
+                      checked={!formData.useProfileResume}
+                      onChange={() => setFormData({ ...formData, useProfileResume: false })}
+                      className="w-4 h-4 text-emerald-600 focus:ring-emerald-500"
+                    />
+                    <span className="text-sm font-medium text-gray-700">Upload New</span>
+                  </label>
+                </div>
+              )}
+
+              {formData.useProfileResume && profile.resumeURL ? (
+                <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Check size={18} className="text-emerald-600" />
+                    <span className="text-sm text-emerald-700 font-medium truncate max-w-[200px]">
+                      {profile.resumeURL.split('/').pop()}
+                    </span>
+                  </div>
+                  <a 
+                    href={profile.resumeURL.startsWith('http') ? profile.resumeURL : `http://localhost:5000${profile.resumeURL}`}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-emerald-600 hover:underline font-bold"
+                  >
+                    View Current
+                  </a>
+                </div>
+              ) : (
+                <div className={`border-2 border-dashed rounded-lg p-4 text-center cursor-pointer transition ${
+                  errors.resumeFile ? 'border-red-300 bg-red-50' : 'border-emerald-300 bg-emerald-50 hover:border-emerald-400'
+                }`}>
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file && file.type === 'application/pdf') {
+                        setFormData({ ...formData, resumeFile: file, useProfileResume: false });
+                        setErrors({ ...errors, resumeFile: null });
+                      } else if (file) {
+                        setErrors({ ...errors, resumeFile: 'Please upload a valid PDF file' });
+                      }
+                    }}
+                    className="hidden"
+                    id="resume-upload"
+                  />
+                  <label htmlFor="resume-upload" className="cursor-pointer block">
+                    <p className="text-sm font-semibold text-emerald-700 mb-1">
+                      {formData.resumeFile ? `✓ ${formData.resumeFile.name}` : 'Click to upload or drag and drop'}
+                    </p>
+                    <p className="text-xs text-gray-600">PDF file only (Max 5MB)</p>
+                  </label>
+                </div>
+              )}
               {errors.resumeFile && <p className="text-red-600 text-xs mt-2">{errors.resumeFile}</p>}
             </div>
 

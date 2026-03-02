@@ -41,7 +41,8 @@ const MessageList = ({ messages = [], loading = false, userId, onMessagesLoad })
 
   // Determine if current user is sender
   const isSender = (message) => {
-    return message.senderId === userId || message.sender?._id === userId;
+    const sId = message.senderId?._id || message.senderId || message.sender?._id;
+    return String(sId) === String(userId);
   };
 
   if (loading) {

@@ -20,8 +20,13 @@ exports.updateProfile = async (req, res) => {
   if (req.file) {
     updates.profilePhoto = `/uploads/${req.file.filename || req.file.originalname}`;
   }
-  const user = await User.findByIdAndUpdate(req.user._id, updates, { new: true }).select('-password');
-  res.json({ success: true, profile: user });
+  
+  const user = await User.findById(req.user._id);
+  Object.assign(user, updates);
+  await user.save();
+  
+  const updatedUser = await User.findById(req.user._id).select('-password');
+  res.json({ success: true, profile: updatedUser });
 };
 
 // Company endpoints (basic)
@@ -43,7 +48,7 @@ exports.updateCompanyProfile = async (req, res) => {
   if (req.file) payload.companyLogo = `/uploads/${req.file.filename || req.file.originalname}`;
   let company = await Company.findOne({ owner: req.user._id });
   if (company) {
-    company = Object.assign(company, payload);
+    Object.assign(company, payload);
     await company.save();
   } else {
     company = new Company({ owner: req.user._id, ...payload });

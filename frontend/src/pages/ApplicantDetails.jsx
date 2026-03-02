@@ -936,7 +936,7 @@ const ApplicantDetails = () => {
                       fullWidth
                       onClick={() => {
                         const a = document.createElement('a');
-                        a.href = resumeUrl;
+                        a.href = resumeURL.startsWith('http') ? resumeURL : `http://localhost:5000${resumeURL}`;
                         a.download = `${applicant.firstName}-${applicant.lastName}-resume.pdf`;
                         a.click();
                       }}

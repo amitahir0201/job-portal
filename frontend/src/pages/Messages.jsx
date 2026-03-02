@@ -309,8 +309,11 @@ const Messages = () => {
                     <div className="relative flex-shrink-0">
                       <img
                         src={
-                          selectedConversation.profile?.profilePhoto ||
-                          `https://ui-avatars.com/api/?name=${selectedConversation.name}&background=10b981&color=fff`
+                          selectedConversation.profile?.profilePhoto 
+                            ? (selectedConversation.profile.profilePhoto.startsWith('http') 
+                                ? selectedConversation.profile.profilePhoto 
+                                : `http://localhost:5000${selectedConversation.profile.profilePhoto}`)
+                            : `https://ui-avatars.com/api/?name=${selectedConversation.name}&background=10b981&color=fff`
                         }
                         alt={selectedConversation.name}
                         className="w-11 h-11 rounded-full object-cover border-2 border-emerald-100"

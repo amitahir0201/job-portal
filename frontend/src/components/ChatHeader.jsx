@@ -30,7 +30,13 @@ const ChatHeader = ({ recruiter, jobTitle, isOnline, onBackClick }) => {
           <div className="flex items-center gap-3 flex-1 min-w-0">
             <div className="relative flex-shrink-0">
               <img
-                src={recruiter?.profilePhoto || `https://ui-avatars.com/api/?name=${recruiter?.name || 'Recruiter'}&background=10b981&color=fff`}
+                src={
+                  recruiter?.profilePhoto 
+                    ? (recruiter.profilePhoto.startsWith('http') 
+                        ? recruiter.profilePhoto 
+                        : `http://localhost:5000${recruiter.profilePhoto}`)
+                    : `https://ui-avatars.com/api/?name=${recruiter?.name || 'Recruiter'}&background=10b981&color=fff`
+                }
                 alt={recruiter?.name}
                 className="w-10 h-10 rounded-full object-cover"
               />
