@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
@@ -16,6 +16,16 @@ const Login = () => {
   const [globalError, setGlobalError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showRegisterPopup, setShowRegisterPopup] = useState(false);
+
+  // Auto-clear global error after 5 seconds
+  useEffect(() => {
+    if (globalError) {
+      const timer = setTimeout(() => {
+        setGlobalError('');
+      }, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [globalError]);
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -174,22 +184,7 @@ const Login = () => {
             Create an Account
           </a>
 
-          {/* Demo Credentials Box */}
-          <div className="mt-6 p-4 bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-lg">
-            <h3 className="text-sm font-semibold text-gray-900 mb-3">💡 Demo Credentials</h3>
-            
-            <div className="mb-3">
-              <p className="text-xs font-semibold text-gray-700 mb-1">Recruiter:</p>
-              <p className="text-xs text-gray-600">recruiter@example.com</p>
-              <p className="text-xs text-gray-600">password123</p>
-            </div>
-            
-            <div className="border-t border-green-200 pt-3">
-              <p className="text-xs font-semibold text-gray-700 mb-1">Job Seeker:</p>
-              <p className="text-xs text-gray-600">jobseeker@example.com</p>
-              <p className="text-xs text-gray-600">password123</p>
-            </div>
-          </div>
+          
           {showRegisterPopup && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
               <div className="bg-white p-6 rounded shadow-lg max-w-sm w-full mx-4">

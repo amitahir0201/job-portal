@@ -74,7 +74,30 @@ const MessageBubble = ({ message, isSender, showTime = true }) => {
         >
           {/* Text */}
           <p className={`text-sm leading-relaxed break-words whitespace-pre-wrap`}>
-            {message.text || message.message || ''}
+            {(() => {
+              const text = message.text || message.message || '';
+              if (!text) return null;
+              
+              const urlRegex = /(https?:\/\/[^\s]+)/g;
+              const parts = text.split(urlRegex);
+              
+              return parts.map((part, index) => {
+                if (part.match(urlRegex)) {
+                  return (
+                    <a
+                      key={index}
+                      href={part}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className={`underline break-all ${isSender ? 'text-emerald-100 hover:text-white' : 'text-emerald-600 hover:text-emerald-700'} transition-colors font-medium`}
+                    >
+                      {part}
+                    </a>
+                  );
+                }
+                return part;
+              });
+            })()}
           </p>
 
           {/* Image Attachment Preview */}
