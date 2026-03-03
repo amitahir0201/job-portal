@@ -426,29 +426,30 @@ const AdminDashboard = () => {
                           </p>
                         )}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-full">
+                      <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2 ml-2 flex-shrink-0">
+                        <span className="px-3 py-1 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded-full whitespace-nowrap">
                           Recruiter
                         </span>
                         <button
                           onClick={() => handleDeleteRecruiter(recruiter._id, recruiter.fullName)}
                           disabled={deletingId === recruiter._id}
-                          className="px-3 py-1 bg-red-100 text-red-700 hover:bg-red-200 text-xs font-semibold rounded transition-colors disabled:bg-gray-200 disabled:text-gray-400 flex items-center gap-1"
+                          className="p-1.5 sm:px-3 sm:py-1 bg-red-100 text-red-700 hover:bg-red-200 text-xs font-semibold rounded transition-colors disabled:bg-gray-200 disabled:text-gray-400 flex items-center gap-1"
                           title="Delete recruiter"
                         >
                           {deletingId === recruiter._id ? (
                             <>
                               <div className="w-3 h-3 border-2 border-red-700 border-t-transparent rounded-full animate-spin"></div>
-                              Deleting...
+                              <span className="hidden sm:inline">Deleting...</span>
                             </>
                           ) : (
                             <>
                               <Trash2 className="w-3 h-3" />
-                              Delete
+                              <span className="hidden sm:inline">Delete</span>
                             </>
                           )}
                         </button>
                       </div>
+
                     </div>
                   ))}
                 </div>
