@@ -21,11 +21,12 @@ exports.apply = async (req, res) => {
     // If user authenticated, prefer req.user
     const applicantId = req.user?._id || null;
 
-    // Get resume file path or URL
+    // Get resume from GridFS
     let resumeURL = req.body.resumeURL || null;
     if (req.file) {
-      resumeURL = `/uploads/resumes/${req.file.filename}`;
+      resumeURL = req.file.id;
     }
+
 
     // Create application
     const application = new Application({

@@ -16,10 +16,10 @@ exports.updateProfile = async (req, res) => {
   if (typeof updates.bio === 'string') updates.summary = updates.bio;
   if (typeof updates.linkedinLink === 'string') updates.linkedinUrl = updates.linkedinLink;
 
-  // If file uploaded, set URL (local file for now)
   if (req.file) {
-    updates.profilePhoto = `/uploads/${req.file.filename || req.file.originalname}`;
+    updates.profilePhoto = req.file.id;
   }
+
   
   const user = await User.findById(req.user._id);
   Object.assign(user, updates);
@@ -45,7 +45,8 @@ exports.updateCompanyProfile = async (req, res) => {
       payload.socialLinks = {};
     }
   }
-  if (req.file) payload.companyLogo = `/uploads/${req.file.filename || req.file.originalname}`;
+  if (req.file) payload.companyLogo = req.file.id;
+
   let company = await Company.findOne({ owner: req.user._id });
   if (company) {
     Object.assign(company, payload);
@@ -64,7 +65,7 @@ exports.uploadPhoto = async (req, res) => {
   }
 
   const user = await User.findById(req.user._id);
-  user.profilePhoto = `/uploads/${req.file.filename}`;
+  user.profilePhoto = req.file.id;
   await user.save();
 
   res.json({
@@ -72,6 +73,7 @@ exports.uploadPhoto = async (req, res) => {
     message: 'Photo uploaded successfully',
     profilePhoto: user.profilePhoto
   });
+
 };
 
 // POST /api/profile/resume
@@ -81,7 +83,7 @@ exports.uploadResume = async (req, res) => {
   }
 
   const user = await User.findById(req.user._id);
-  user.resumeURL = `/uploads/${req.file.filename}`;
+  user.resumeURL = req.file.id;
   await user.save();
 
   res.json({
@@ -89,4 +91,5 @@ exports.uploadResume = async (req, res) => {
     message: 'Resume uploaded successfully',
     resumeURL: user.resumeURL
   });
+
 };

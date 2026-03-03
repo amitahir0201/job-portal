@@ -7,35 +7,8 @@ const authMiddleware = require('../middleware/authMiddleware');
 
 const appController = require('../controllers/applicationController');
 
-// Create uploads directory if it doesn't exist
-const uploadsDir = path.join(__dirname, '../../uploads/resumes');
-if (!fs.existsSync(uploadsDir)) {
-  fs.mkdirSync(uploadsDir, { recursive: true });
-}
+const upload = require('../config/gridfs');
 
-// Configure multer for resume uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, uploadsDir);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, 'resume-' + uniqueSuffix + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({
-  storage: storage,
-  fileFilter: (req, file, cb) => {
-    // Only accept PDF files
-    if (file.mimetype === 'application/pdf') {
-      cb(null, true);
-    } else {
-      cb(new Error('Only PDF files are allowed'), false);
-    }
-  },
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
-});
 
 // POST /api/applications/apply
 router.post('/apply', authMiddleware, upload.single('resume'), appController.apply);

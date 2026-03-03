@@ -1,43 +1,39 @@
-/**
- * Constructs full URL for images from relative backend paths
- * @param {string} imagePath - The image path (can be relative like '/uploads/file.jpg' or full URL)
- * @returns {string} - Full URL to the image
- */
 export const getFullImageUrl = (imagePath) => {
   if (!imagePath) {
-    console.log('getFullImageUrl: imagePath is empty');
     return null;
   }
   
   // If it's already a full URL, return as-is
   if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
-    console.log('getFullImageUrl: Already a full URL:', imagePath);
     return imagePath;
   }
 
-  // Blob URLs are only valid in the current session and should NEVER be stored in the DB.
-  // If we encounter one here, it's almost certainly a stale reference from the DB that will cause a console error.
-  // We return null to prevent the "Not allowed to load local resource" error.
+  // Blob URLs from local preview
   if (imagePath.startsWith('blob:')) {
-    console.log('getFullImageUrl: Stale blob URL detected, returning null:', imagePath);
-    return null;
+    return imagePath;
+  }
+
+  // GridFS ID (MongoDB ObjectId is a 24-character hex string)
+  // We check if it's a 24-char hex string and doesn't start with / (relative path)
+  const isGridFsId = /^[0-9a-fA-F]{24}$/.test(imagePath);
+  
+  if (isGridFsId) {
+    const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    return `${apiBase}/files/${imagePath}`;
   }
   
-  // If it's a relative path from backend, construct full URL
+  // If it's a relative path from backend (legacy), construct full URL
   if (imagePath.startsWith('/')) {
     const apiBase = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
     const baseUrl = apiBase.replace('/api', ''); // Remove /api suffix
-    const fullUrl = baseUrl + imagePath;
-    console.log('getFullImageUrl: Constructed full URL:', fullUrl);
-    return fullUrl;
+    return baseUrl + imagePath;
   }
   
-  // If it's a data URL (from FileReader), return as-is
+  // Data URLs
   if (imagePath.startsWith('data:')) {
-    console.log('getFullImageUrl: Data URL');
     return imagePath;
   }
   
-  console.log('getFullImageUrl: Returning as-is:', imagePath);
   return imagePath;
 };
+
