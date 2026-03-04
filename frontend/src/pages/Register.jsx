@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import { sendVerificationEmail } from '../services/emailService';
 
 const Register = () => {
   const navigate = useNavigate();
-  const { login } = useAuth();
 
   const [formData, setFormData] = useState({
     name: '',
@@ -72,18 +71,40 @@ const Register = () => {
 
     try {
       setLoading(true);
+
+      // Step 1: Register user on backend (returns verifyUrl, does NOT auto-login)
       const response = await api.post('/auth/register', {
         name: formData.name,
         email: formData.email,
         password: formData.password,
       });
 
-      if (response.data.success) {
-        login(response.data.user, response.data.token);
-        navigate('/job-seeker');
+      if (response.data.success && response.data.pendingVerification) {
+        const { verifyUrl, user } = response.data;
+
+        // Step 2: Send verification email via EmailJS
+        const emailResult = await sendVerificationEmail(
+          user.email,
+          user.fullName || formData.name,
+          verifyUrl
+        );
+
+        if (!emailResult.success) {
+          console.warn('[Register] Email send failed:', emailResult.message);
+          // Still navigate — user can resend from the confirmation page
+        }
+
+        // Step 3: Navigate to confirmation page
+        navigate('/email-sent', {
+          state: {
+            email: user.email,
+            name: user.fullName || formData.name,
+            verifyUrl,
+          },
+        });
       }
     } catch (err) {
-      setGlobalError(err.response?.data?.message || 'Registration failed');
+      setGlobalError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -163,13 +184,19 @@ const Register = () => {
                 placeholder="Re-enter your password"
                 className={`input-field ${errors.confirmPassword ? 'border-red-500 focus:ring-red-500' : ''}`}
               />
-              {errors.confirmPassword && <p className="text-red-600 text-sm mt-1">{errors.confirmPassword}</p>}
+              {errors.confirmPassword && (
+                <p className="text-red-600 text-sm mt-1">{errors.confirmPassword}</p>
+              )}
             </div>
 
-            {/* Info: Job Seeker Registration */}
-            <div className="animate-fade-in p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700" style={{ animationDelay: '0.5s' }}>
-              <span className="font-semibold">ℹ️ Job Seeker Registration</span><br />
-              <span>Create your account to explore job opportunities and apply for positions.</span>
+            {/* Info Banner */}
+            <div
+              className="animate-fade-in p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700"
+              style={{ animationDelay: '0.5s' }}
+            >
+              <span className="font-semibold">📧 Email Verification Required</span>
+              <br />
+              <span>After registering, you'll receive a verification email. Click the link to activate your account.</span>
             </div>
 
             {/* Submit Button */}

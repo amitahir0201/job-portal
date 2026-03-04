@@ -27,19 +27,76 @@ exports.register = async (req, res) => {
       return res.status(409).json({ success: false, message: 'User already exists' });
     }
 
-    // Create user with jobseeker role
+    // Generate email verification token
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+    // Create user with isEmailVerified = false
     const user = await User.create({
       fullName: resolvedName,
       email: normalizedEmail,
       password,
       role: 'jobseeker',
       companyName,
+      isEmailVerified: false,
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
     });
 
-    const token = generateToken(user);
+    // Build verify URL using raw token (frontend will call backend with this)
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const verifyUrl = `${frontendUrl}/verify-email/${rawToken}`;
 
+    // Return raw token and user info (do NOT auto-login yet)
     res.status(201).json({
       success: true,
+      pendingVerification: true,
+      verifyUrl,          // frontend uses this to build EmailJS link
+      rawToken,           // also returned so frontend can use directly
+      user: {
+        id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error('Registration Error:', error);
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+/* ================= VERIFY EMAIL ================= */
+exports.verifyEmail = async (req, res) => {
+  try {
+    const rawToken = req.params.token;
+    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+
+    const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'Verification link is invalid or has expired.',
+      });
+    }
+
+    // Mark as verified and clear token fields
+    user.isEmailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save();
+
+    // Generate JWT so user is automatically logged in
+    const token = generateToken(user);
+
+    res.json({
+      success: true,
+      message: 'Email verified successfully!',
+      token,
       user: {
         id: user._id,
         fullName: user.fullName,
@@ -47,11 +104,10 @@ exports.register = async (req, res) => {
         role: user.role,
         companyName: user.companyName,
       },
-      token,
     });
   } catch (error) {
-    console.error("Registration Error:", error);
-    res.status(500).json({ success: false, message: error.message });
+    console.error('Email Verification Error:', error);
+    res.status(500).json({ success: false, message: 'Error verifying email' });
   }
 };
 
@@ -69,6 +125,16 @@ exports.login = async (req, res) => {
 
     if (!user || !(await user.matchPassword(password))) {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
+    }
+
+    // Block login if email is not verified
+    if (!user.isEmailVerified) {
+      return res.status(403).json({
+        success: false,
+        message: 'Please verify your email before logging in. Check your inbox for the verification link.',
+        emailNotVerified: true,
+        email: user.email,
+      });
     }
 
     const token = generateToken(user);

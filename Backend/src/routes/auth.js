@@ -5,6 +5,7 @@ const asyncHandler = require('../middleware/asyncHandler');
 
 router.post('/register', asyncHandler(authController.register));
 router.post('/login', asyncHandler(authController.login));
+router.get('/verify-email/:token', asyncHandler(authController.verifyEmail));
 router.post('/forgot-password', asyncHandler(authController.forgotPassword));
 router.post('/reset-password/:token', asyncHandler(authController.resetPassword));
 router.get('/profile', asyncHandler(authController.getProfile)); // requires token - controller will check
