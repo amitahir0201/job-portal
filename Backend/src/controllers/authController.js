@@ -127,8 +127,9 @@ exports.login = async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid credentials' });
     }
 
-    // Block login if email is not verified
-    if (!user.isEmailVerified) {
+    // Block login if email is not verified (only for jobseekers/seekers)
+    const requiresVerification = ['jobseeker', 'seeker'].includes(user.role);
+    if (requiresVerification && !user.isEmailVerified) {
       return res.status(403).json({
         success: false,
         message: 'Please verify your email before logging in. Check your inbox for the verification link.',
