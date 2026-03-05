@@ -49,8 +49,8 @@ export const sendResetPasswordEmail = async (userEmail, userName, resetLink) => 
     console.log('[EmailJS] Reset email sent successfully', { status: response.status });
     return { success: true, message: 'Reset email sent successfully', response };
   } catch (error) {
-    console.error('[EmailJS] Error sending reset email:', error.message);
-    return { success: false, message: error.message || 'Failed to send reset email', error };
+    console.error('[EmailJS] Error sending reset email:', error?.text || error?.message || error);
+    return { success: false, message: error?.text || error?.message || 'Failed to send reset email', error };
   }
 };
 
@@ -88,8 +88,8 @@ export const sendVerificationEmail = async (userEmail, userName, verifyLink) => 
     console.log('[EmailJS] Verification email sent successfully', { status: response.status });
     return { success: true, message: 'Verification email sent successfully', response };
   } catch (error) {
-    console.error('[EmailJS] Error sending verification email:', error.message);
-    return { success: false, message: error.message || 'Failed to send verification email', error };
+    console.error('[EmailJS] Error sending verification email:', error?.text || error?.message || error);
+    return { success: false, message: error?.text || error?.message || 'Failed to send verification email', error };
   }
 };
 
@@ -115,8 +115,8 @@ export const sendRecruiterInvitationEmail = async (recruiterEmail, recruiterName
     console.log('[EmailJS] Recruiter invitation email sent successfully', { status: response.status });
     return { success: true, message: 'Invitation email sent successfully', response };
   } catch (error) {
-    console.error('[EmailJS] Error sending recruiter invitation:', error.message);
-    return { success: false, message: error.message || 'Failed to send invitation email', error };
+    console.error('[EmailJS] Error sending recruiter invitation:', error?.text || error?.message || error);
+    return { success: false, message: error?.text || error?.message || 'Failed to send invitation email', error };
   }
 };
 

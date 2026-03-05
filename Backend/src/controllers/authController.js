@@ -27,21 +27,21 @@ exports.register = async (req, res) => {
       return res.status(409).json({ success: false, message: 'User already exists' });
     }
 
-    // Generate email verification token
-    const rawToken = crypto.randomBytes(32).toString('hex');
-    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
+    const bcrypt = require('bcryptjs');
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Create user with isEmailVerified = false
-    const user = await User.create({
+    // Create a JWT with user data
+    const payload = {
       fullName: resolvedName,
       email: normalizedEmail,
-      password,
+      password: hashedPassword,
       role: 'jobseeker',
       companyName,
-      isEmailVerified: false,
-      emailVerificationToken: hashedToken,
-      emailVerificationExpires: Date.now() + 24 * 60 * 60 * 1000, // 24 hours
-    });
+    };
+    
+    // Sign the token with a 24-hour expiration
+    const rawToken = jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '24h' });
 
     // Build verify URL using raw token (frontend will call backend with this)
     const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
@@ -54,10 +54,9 @@ exports.register = async (req, res) => {
       verifyUrl,          // frontend uses this to build EmailJS link
       rawToken,           // also returned so frontend can use directly
       user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        role: user.role,
+        fullName: resolvedName,
+        email: normalizedEmail,
+        role: 'jobseeker',
       },
     });
   } catch (error) {
@@ -70,25 +69,37 @@ exports.register = async (req, res) => {
 exports.verifyEmail = async (req, res) => {
   try {
     const rawToken = req.params.token;
-    const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex');
-
-    const user = await User.findOne({
-      emailVerificationToken: hashedToken,
-      emailVerificationExpires: { $gt: Date.now() },
-    });
-
-    if (!user) {
-      return res.status(400).json({
-        success: false,
-        message: 'Verification link is invalid or has expired.',
-      });
+    const decoded = jwt.verify(rawToken, process.env.JWT_SECRET);
+    if (!decoded || !decoded.email) {
+      return res.status(400).json({ success: false, message: 'Verification link is invalid or has expired.' });
     }
 
-    // Mark as verified and clear token fields
-    user.isEmailVerified = true;
-    user.emailVerificationToken = undefined;
-    user.emailVerificationExpires = undefined;
-    await user.save();
+    const { fullName, email, password, role, companyName } = decoded;
+
+    // Verify user doesn't already exist (in case they verified twice or registered again)
+    const normalizedEmail = String(email).trim().toLowerCase();
+    let user = await User.findOne({ email: normalizedEmail });
+
+    if (user) {
+       // If user already exists, check if they are verified
+       if (user.isEmailVerified) {
+         return res.status(400).json({ success: false, message: 'Email already verified. Please login.' });
+       }
+       // If they exist but aren't verified, we can update them and mark them verified.
+       // However, in the new flow, they shouldn't exist unless created before this change.
+       user.isEmailVerified = true;
+       await user.save();
+    } else {
+       // Create the new user
+       user = await User.create({
+         fullName,
+         email: normalizedEmail,
+         password, // already hashed
+         role,
+         companyName,
+         isEmailVerified: true,
+       });
+    }
 
     // Generate JWT so user is automatically logged in
     const token = generateToken(user);
