@@ -22,6 +22,8 @@ app.use(
       "https://jobhubnow.vercel.app",
       "http://localhost:3000",
       "http://localhost:3001",
+      "http://13.235.114.46:3000",
+      "http://13.235.114.46:5000",
       "http://localhost:3002",
       "http://localhost:3003",
       "http://localhost:5000",
