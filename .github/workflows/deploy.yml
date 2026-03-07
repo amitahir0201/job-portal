@@ -19,45 +19,40 @@ jobs:
         with:
           node-version: "20"
 
-      # Backend install
+      # Install backend dependencies
       - name: Install backend dependencies
         working-directory: Backend
         run: npm ci
 
-      # - name: Build backend
-        # working-directory: Backend
-        # run: npm run build
-
-      # Frontend install
+      # Install frontend dependencies
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm ci
 
+      # Build frontend
       - name: Build frontend
         working-directory: frontend
         run: npm run build
 
-      # Package files
+      # Create deployment package
       - name: Create deployment package
         run: |
           mkdir deploy
 
-          # backend
-          cp -r Backend/dist deploy/
-          cp Backend/package*.json deploy/
-          cp Backend/ecosystem.config.cjs deploy/
+          # copy backend
+          cp -r Backend deploy/backend
 
-          # frontend build
+          # copy frontend build
           cp -r frontend/dist deploy/frontend
 
           tar -czf deploy.tar.gz -C deploy .
 
+      # Upload artifact
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: deployment-package
           path: deploy.tar.gz
-
 
   deploy:
     name: Deploy to EC2
@@ -84,13 +79,19 @@ jobs:
 
           ssh -i key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'EOF'
 
+            set -e
+
             cd /var/www/job-portal
 
+            # extract new deployment
             tar -xzf /tmp/deploy.tar.gz
             rm /tmp/deploy.tar.gz
 
+            # install backend dependencies
+            cd backend
             npm ci --omit=dev
 
+            # restart app with PM2
             if pm2 describe job-portal > /dev/null 2>&1; then
               pm2 reload ecosystem.config.cjs
             else
