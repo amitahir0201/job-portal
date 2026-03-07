@@ -81,7 +81,7 @@ jobs:
 
             set -e
 
-            cd /var/www/job-portal
+            cd /var/www/jobhubnow
 
             # extract new deployment
             tar -xzf /tmp/deploy.tar.gz
