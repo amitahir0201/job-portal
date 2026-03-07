@@ -8,6 +8,9 @@ RUN npm install
 
 COPY . .
 
+# ensure env file exists during build
+COPY .env .env
+
 RUN npm run build
 
 FROM nginx:alpine
