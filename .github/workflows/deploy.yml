@@ -79,27 +79,28 @@ jobs:
 
           ssh -i key.pem -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_HOST << 'EOF'
 
-            set -e
+set -e
 
-            cd /var/www/jobhubnow
+cd /var/www/jobhubnow
 
-            # extract new deployment
-            tar -xzf /tmp/deploy.tar.gz
-            rm /tmp/deploy.tar.gz
+# extract new deployment
+tar -xzf /tmp/deploy.tar.gz
+rm /tmp/deploy.tar.gz
 
-            # install backend dependencies
-            cd backend
-            npm ci --omit=dev
+# install backend dependencies
+cd backend
+npm ci --omit=dev
+cd ..
 
-            # restart app with PM2
-            if pm2 describe job-portal > /dev/null 2>&1; then
-              pm2 reload ../ecosystem.config.js
-            else
-              pm2 start ecosystem.config.js
-            fi
+# restart app with PM2
+if pm2 describe jobhubnow-backend > /dev/null 2>&1; then
+  pm2 reload ecosystem.config.js
+else
+  pm2 start ecosystem.config.js
+fi
 
-            pm2 save
+pm2 save
 
-          EOF
+EOF
 
           rm key.pem
