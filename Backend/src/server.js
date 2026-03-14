@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 5000;
     // Seed admin user on startup
     await seedAdmin();
     
-   app.listen(PORT, () => {
+   app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server started on port ${PORT}`);
 });
   } catch (err) {
