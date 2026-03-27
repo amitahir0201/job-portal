@@ -3,13 +3,13 @@ FROM node:20 AS build
 WORKDIR /app
 
 COPY package*.json ./
-
 RUN npm install
 
 COPY . .
 
-# ensure env file exists during build
-COPY .env .env
+# Accept env from GitHub Actions
+ARG VITE_API_URL
+ENV VITE_API_URL=$VITE_API_URL
 
 RUN npm run build
 

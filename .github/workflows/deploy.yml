@@ -28,7 +28,10 @@ jobs:
       # Build & Push Frontend
       - name: Build frontend image
         run: |
-          docker build -t amitahir/jobhubnow:frontend ./frontend
+          docker build \
+            --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
+            -t amitahir/jobhubnow:frontend ./frontend
+
           docker push amitahir/jobhubnow:frontend
 
   deploy:
