@@ -16,27 +16,11 @@ const { errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 // ✅ Proper CORS setup
-app.use(
-  cors({
-    origin: [
-      "https://jobhubnow.vercel.app",
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "http://13.235.114.46:3000",
-      "http://13.235.114.46:5000",
-      "http://localhost:3002",
-      "http://localhost:3003",
-      "http://localhost:5000",
-      "http://localhost:5173",
-      "http://127.0.0.1:3000",
-      "http://127.0.0.1:3001",
-      "http://127.0.0.1:3002",
-      "http://127.0.0.1:3003",
-      "http://127.0.0.1:5173"
-    ],
-    credentials: true,
-  })
-);
+
+app.use(cors({
+  origin: true, // This reflects whatever origin is sending the request
+  credentials: true
+}));
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true }));

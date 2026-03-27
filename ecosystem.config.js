@@ -2,16 +2,16 @@ module.exports = {
   apps: [
     {
       name: "jobhubnow-backend",
-      script: "./Backend/src/server.js",
-      cwd: "/var/www/jobhubnow",
+      script: "server.js",               // Just the filename
+      cwd: "/var/www/jobhubnow/Backend/src", // Run it directly from the src folder
       env: {
-        NODE_ENV: "production"
+        NODE_ENV: "production",
       }
     },
     {
       name: "jobhubnow-frontend",
       script: "npm",
-      args: "run preview",
+      args: "run preview -- --port 3000 --host 0.0.0.0",
       cwd: "/var/www/jobhubnow/frontend",
       env: {
         NODE_ENV: "production"

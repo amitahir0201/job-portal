@@ -1,0 +1,52 @@
+require('dotenv').config(); // ✅ load env
+
+const mongoose = require('mongoose');
+const { GridFsStorage } = require('multer-gridfs-storage');
+const multer = require('multer');
+const path = require('path');
+
+// ✅ DEBUG (remove later)
+console.log("MONGO_URI:", process.env.MONGO_URI);
+
+if (!process.env.MONGO_URI) {
+  throw new Error("❌ MONGO_URI is not defined in .env");
+}
+
+const storage = new GridFsStorage({
+  url: process.env.MONGO_URI, // ✅ MUST exist
+  options: {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  },
+  file: (req, file) => {
+    return new Promise((resolve, reject) => {
+      const filename =
+        Date.now() +
+        '-' +
+        Math.random().toString(36).substring(2, 9) +
+        path.extname(file.originalname);
+
+      resolve({
+        filename: filename,
+        bucketName: 'uploads', // ✅ better than 'fs'
+      });
+    });
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+  fileFilter: (req, file, cb) => {
+    if (
+      file.mimetype.startsWith('image/') ||
+      file.mimetype === 'application/pdf'
+    ) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image and PDF files are allowed'), false);
+    }
+  },
+});
+
+module.exports = upload;
