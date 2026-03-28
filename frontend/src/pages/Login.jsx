@@ -102,7 +102,7 @@ const Login = () => {
           {/* Header */}
           <div className="mb-8 text-center animate-fade-in">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h2>
-            <p className="text-gray-600">Sign in to your JobHub Pro account</p>
+            <p className="text-gray-600">Sign in to your JobHubNow account</p>
           </div>
 
           {/* Error Alert */}
