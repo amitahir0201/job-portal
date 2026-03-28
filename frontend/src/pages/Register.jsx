@@ -118,7 +118,7 @@ const Register = () => {
           {/* Header */}
           <div className="mb-8 text-center animate-fade-in">
             <h2 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h2>
-            <p className="text-gray-600">Join JobHub Pro and get started</p>
+            <p className="text-gray-600">Join JobHubNow and get started</p>
           </div>
 
           {/* Error Alert */}
