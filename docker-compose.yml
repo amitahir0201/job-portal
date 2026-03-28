@@ -2,7 +2,7 @@ version: "3.8"
 
 services:
   backend:
-    image: amitahir/jobhubnow:backend
+    image: amitahir/jobhubnow:backend-${TAG}
     container_name: jobhubnow-backend
     restart: always
     ports:
@@ -11,7 +11,7 @@ services:
       - ./Backend/.env
 
   frontend:
-    image: amitahir/jobhubnow:frontend
+    image: amitahir/jobhubnow:frontend-${TAG}
     container_name: jobhubnow-frontend
     restart: always
     ports:
