@@ -12,7 +12,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      # Set unique tag using commit SHA
+      # Set unique tag
       - name: Set image tag
         run: echo "TAG=${GITHUB_SHA}" >> $GITHUB_ENV
 
@@ -26,13 +26,13 @@ jobs:
       # Build & Push Backend
       - name: Build backend image
         run: |
-          docker build -t amitahir/jobhubnow:backend-${TAG} ./Backend
+          docker build --no-cache -t amitahir/jobhubnow:backend-${TAG} ./Backend
           docker push amitahir/jobhubnow:backend-${TAG}
 
       # Build & Push Frontend
       - name: Build frontend image
         run: |
-          docker build \
+          docker build --no-cache \
             --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
             -t amitahir/jobhubnow:frontend-${TAG} ./frontend
 
@@ -58,9 +58,8 @@ jobs:
 
           cd /var/www/jobhubnow
 
-          # Update docker-compose with new tag dynamically
-          sed -i "s|backend-.*|backend-$TAG|g" docker-compose.yml
-          sed -i "s|frontend-.*|frontend-$TAG|g" docker-compose.yml
+          # pass TAG to docker-compose
+          export TAG=${TAG}
 
           docker compose down
           docker compose pull

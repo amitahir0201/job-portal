@@ -49,7 +49,7 @@ const Landing = () => {
                 Connect Talent with <span className="text-green-600">Opportunity</span>
               </h1>
               <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-                Welcome to JobHub Pro - The modern, intuitive job portal connecting jobseekers with their dream opportunities and helping recruiters find top talent.
+                Welcome to JobHubnow - The modern, intuitive job portal connecting jobseekers with their dream opportunities and helping recruiters find top talent.
               </p>
               <div className="flex gap-4">
                 <Link
