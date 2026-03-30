@@ -159,7 +159,7 @@ const Landing = () => {
             </div>
           </div>
           <div className="border-t border-gray-800 pt-8 text-center text-sm">
-            <p>&copy; 2026 JobHub Pro. All rights reserved.</p>
+            <p>&copy; 2026 JobHubNow. All rights reserved.</p>
           </div>
         </div>
       </footer>
