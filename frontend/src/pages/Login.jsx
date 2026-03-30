@@ -172,7 +172,7 @@ const Login = () => {
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-white text-gray-600">New to JobHub?</span>
+              <span className="px-2 bg-white text-gray-600">New to JobHubnow?</span>
             </div>
           </div>
 
