@@ -532,4 +532,4 @@ For issues or questions:
 
 **Happy Coding! 🎉**
 
-Made with ❤️ using MERN Stack
+Made with ❤️ using MERN Stack Tech
