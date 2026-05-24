@@ -533,7 +533,3 @@ For issues or questions:
 **Happy Coding! 🎉**
 
 Made with ❤️ using MERN Stack
-#   C o d e A l p h a _ c i - c d - p i p e l i n e  
- #   C o d e A l p h a _ c i - c d - p i p e l i n e  
- #   C o d e A l p h a _ W e b - S e r v e r - u s i n g - D o c k e r  
- 
