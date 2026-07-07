@@ -516,7 +516,7 @@ Replace `:id` with actual job ID - requires Authorization header
 
 Feel free to fork, modify, and improve this project!
 
-## 📄 License
+## 📄 License 
 
 MIT License - Feel free to use this project for personal and commercial purposes.
 
