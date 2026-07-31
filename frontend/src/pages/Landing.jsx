@@ -133,7 +133,7 @@ const Landing = () => {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h4 className="text-white font-bold mb-4">JobHub Pro</h4>
+              <h4 className="text-white font-bold mb-4">JobHubNow</h4>
               <p className="text-sm">The modern way to find jobs.</p>
             </div>
             <div>
