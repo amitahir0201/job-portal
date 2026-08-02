@@ -110,7 +110,7 @@ const Landing = () => {
       <div className="section bg-gradient-to-r from-green-600 to-emerald-600">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h2 className="text-4xl font-bold text-white mb-6">Ready to Get Started?</h2>
-          <p className="text-xl text-green-50 mb-8">Join thousands of professionals already using JobHub Pro</p>
+          <p className="text-xl text-green-50 mb-8">Join thousands of professionals already using JobHubNow</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
               to="/login"
