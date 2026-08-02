@@ -1,4 +1,4 @@
-### 💼 Job Portal - MERN Stack Application
+## 💼 Job Portal - MERN Stack Application
 
 A complete job listing portal built with the MERN stack (MongoDB, Express, React, Node.js) featuring secure JWT authentication, role-based authorization, and full-featured job management.
 
