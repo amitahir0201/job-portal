@@ -34,6 +34,10 @@ jobs:
         run: |
           docker build --no-cache \
             --build-arg VITE_API_URL=${{ secrets.VITE_API_URL }} \
+            --build-arg VITE_EMAILJS_SERVICE_ID=${{ secrets.VITE_EMAILJS_SERVICE_ID }} \
+            --build-arg VITE_EMAILJS_TEMPLATE_ID=${{ secrets.VITE_EMAILJS_TEMPLATE_ID }} \
+            --build-arg VITE_EMAILJS_PUBLIC_KEY=${{ secrets.VITE_EMAILJS_PUBLIC_KEY }} \
+            --build-arg VITE_EMAILJS_VERIFY_TEMPLATE_ID=${{ secrets.VITE_EMAILJS_VERIFY_TEMPLATE_ID }} \
             -t amitahir/jobhubnow:frontend-${TAG} ./frontend
 
           docker push amitahir/jobhubnow:frontend-${TAG}
