@@ -79,7 +79,7 @@ const Landing = () => {
       {/* Features Section */}
       <div className="section bg-white border-t border-green-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">Why Choose JobHub Pro?</h2>
+          <h2 className="text-4xl font-bold text-center text-gray-900 mb-16">Why Choose JobHubNow?</h2>
           
           <div className="grid md:grid-cols-3 gap-8">
             {/* Feature 1 */}
